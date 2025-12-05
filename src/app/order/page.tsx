@@ -169,12 +169,12 @@ export default function OrderPage() {
                 </div>
 
                 <label className="block border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50/50 transition-all">
-                  <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                  <input type="file" className="hidden" accept=".pdf,.ai,.psd" onChange={handleFileChange} />
                   <div className="w-16 h-16 bg-gradient-to-r from-primary-500 to-purple-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
                     📤
                   </div>
-                  <p className="font-semibold mb-2">이미지를 드래그하거나 클릭하세요</p>
-                  <p className="text-gray-400 text-sm">PNG, JPG, SVG 파일 지원 (최대 10MB)</p>
+                  <p className="font-semibold mb-2">디자인 파일을 드래그하거나 클릭하세요</p>
+                  <p className="text-gray-400 text-sm">PDF, AI, PSD 파일 지원 (최대 50MB)</p>
                   {designFile && (
                     <p className="mt-4 text-primary-600 font-medium">✓ {designFile.name}</p>
                   )}
