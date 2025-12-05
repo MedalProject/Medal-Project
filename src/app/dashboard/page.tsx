@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [cancelling, setCancelling] = useState<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -41,6 +42,55 @@ export default function DashboardPage() {
 
     init()
   }, [router])
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    if (!confirm('주문을 취소하시겠습니까?')) {
+      return
+    }
+
+    setCancelling(orderId)
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+
+      const response = await fetch('/api/orders', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({
+          orderId,
+          status: 'cancelled',
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || '주문 취소에 실패했습니다.')
+      }
+
+      // 주문 목록 업데이트
+      setOrders(orders.map(order => 
+        order.id === orderId 
+          ? { ...order, status: 'cancelled' }
+          : order
+      ))
+
+      alert('주문이 취소되었습니다.')
+    } catch (error) {
+      console.error('Order cancellation error:', error)
+      alert(error instanceof Error ? error.message : '주문 취소에 실패했습니다.')
+    } finally {
+      setCancelling(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -188,8 +238,12 @@ export default function DashboardPage() {
                       <button className="flex-1 py-3 bg-gradient-to-r from-primary-500 to-purple-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
                         결제하기
                       </button>
-                      <button className="px-6 py-3 border border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
-                        취소
+                      <button 
+                        onClick={() => handleCancelOrder(order.id)}
+                        disabled={cancelling === order.id}
+                        className="px-6 py-3 border border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {cancelling === order.id ? '취소 중...' : '취소'}
                       </button>
                     </div>
                   )}

@@ -82,7 +82,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
-              왜 뱃지팩토리인가요?
+              왜 Hey Badge인가요?
             </h2>
             <p className="text-gray-600 text-lg">
               기존 뱃지 제작의 불편함을 모두 해결했습니다
@@ -158,7 +158,7 @@ export default function Home() {
                 <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-xl flex items-center justify-center text-xl">
                   🏷️
                 </div>
-                <span className="font-display text-2xl font-bold">뱃지팩토리</span>
+                <span className="font-display text-2xl font-bold">Hey Badge</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">
                 누구나 쉽게 나만의 뱃지를 만들 수 있는 세상.
@@ -196,7 +196,7 @@ export default function Home() {
           </div>
           
           <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <span>© 2024 뱃지팩토리. All rights reserved.</span>
+            <span>© 2024 Hey Badge. All rights reserved.</span>
             <span>고객센터: 1588-0000 (평일 09:00-18:00)</span>
           </div>
         </div>

@@ -93,7 +93,7 @@ export default function SignupPage() {
             🏷️
           </div>
           <span className="font-display text-3xl font-bold gradient-text">
-            뱃지팩토리
+            Hey Badge
           </span>
         </Link>
 

@@ -40,7 +40,7 @@ export default function Header() {
               🏷️
             </div>
             <span className="font-display text-xl sm:text-2xl font-bold gradient-text">
-              뱃지팩토리
+              Hey Badge
             </span>
           </Link>
 
