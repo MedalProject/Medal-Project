@@ -61,41 +61,42 @@ export type Template = {
   is_premium: boolean
 }
 
-// 가격 계산 유틸리티
+// 가격 계산 유틸리티 - 칠 종류
 export const priceTable = {
-  'soft-enamel': { base: 3500, addon: 0, name: '소프트 에나멜' },
-  'hard-enamel': { base: 4500, addon: 500, name: '하드 에나멜' },
-  'printed': { base: 2500, addon: 0, name: '프린트 뱃지' },
-  'acrylic': { base: 1500, addon: 0, name: '아크릴 뱃지' },
+  'normal': { base: 3500, addon: 0, name: '일반칠' },
+  'epoxy': { base: 3500, addon: 0, name: '에폭시' },
+  'resin': { base: 3500, addon: 1000, name: '수지칠' },
 }
 
-export const sizeMultiplier: Record<number, number> = {
-  20: 0.9,
-  25: 1,
-  30: 1.2,
-  40: 1.5,
+export const sizeAddon: Record<number, number> = {
+  30: 0,
+  40: 1200,
+  50: 2500,
 }
 
 export function calculatePrice(
   badgeType: string,
   size: number,
   quantity: number
-): { unitPrice: number; discount: number; total: number; discountPercent: number } {
+): { unitPrice: number; discount: number; total: number; discountPerUnit: number; sizeAddonPrice: number } {
   const typePrice = priceTable[badgeType as keyof typeof priceTable] || priceTable['soft-enamel']
-  const sizeMulti = sizeMultiplier[size] || 1
-  const basePrice = Math.round(typePrice.base * sizeMulti)
-  const unitPrice = basePrice + typePrice.addon
+  const sizeAddonPrice = sizeAddon[size] || 0
+  const baseUnitPrice = typePrice.base + typePrice.addon + sizeAddonPrice
 
-  let discountPercent = 0
-  if (quantity >= 100) discountPercent = 30
-  else if (quantity >= 50) discountPercent = 20
-  else if (quantity >= 20) discountPercent = 10
+  // 수량별 개당 할인 금액
+  let discountPerUnit = 0
+  if (quantity >= 5000) discountPerUnit = 1500
+  else if (quantity >= 1000) discountPerUnit = 1300
+  else if (quantity >= 500) discountPerUnit = 1200
+  else if (quantity >= 300) discountPerUnit = 600
+  else if (quantity >= 100) discountPerUnit = 300
+  // 1~99개는 할인 없음
 
-  const subtotal = unitPrice * quantity
-  const discount = Math.round(subtotal * (discountPercent / 100))
-  const total = subtotal - discount
+  const unitPrice = baseUnitPrice - discountPerUnit
+  const discount = discountPerUnit * quantity
+  const total = unitPrice * quantity
 
-  return { unitPrice, discount, total, discountPercent }
+  return { unitPrice, discount, total, discountPerUnit, sizeAddonPrice }
 }
 
 // 주문 상태 한글 변환

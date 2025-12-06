@@ -21,8 +21,8 @@ export default function Home() {
               <span className="gradient-text">현실로</span> 만드세요
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              사진 한 장으로 나만의 뱃지를 만들어 보세요.
-              실시간 3D 미리보기로 결과물을 바로 확인할 수 있습니다.
+              PDF, AI, PSD 디자인 파일로 나만의 뱃지를 만들어 보세요.
+              실시간 가격 확인으로 투명한 견적을 받아보실 수 있습니다.
             </p>
             
             {/* Feature badges */}
@@ -50,9 +50,12 @@ export default function Home() {
               >
                 지금 만들어보기 →
               </Link>
-              <button className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl font-bold text-lg hover:border-primary-500 hover:text-primary-600 transition-all">
+              <Link
+                href="/gallery"
+                className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl font-bold text-lg hover:border-primary-500 hover:text-primary-600 transition-all"
+              >
                 제작 사례 보기
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -69,7 +72,7 @@ export default function Home() {
               <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full metal-silver shadow-lg flex items-center justify-center text-2xl animate-bounce">
                 ❤️
               </div>
-              <div className="absolute -bottom-2 -left-6 w-14 h-14 rounded-full metal-rose-gold shadow-lg flex items-center justify-center text-xl animate-bounce delay-300">
+              <div className="absolute -bottom-2 -left-6 w-14 h-14 rounded-full metal-gold shadow-lg flex items-center justify-center text-xl animate-bounce delay-300">
                 🎵
               </div>
             </div>
@@ -105,8 +108,8 @@ export default function Home() {
               },
               {
                 icon: '🎨',
-                title: '쉬운 디자인',
-                desc: '템플릿 선택만으로 누구나 쉽게 뱃지를 만들 수 있습니다',
+                title: '간편한 주문',
+                desc: 'PDF, AI, PSD 파일만 업로드하면 간편하게 주문할 수 있습니다',
                 color: 'from-green-500/20 to-emerald-500/20',
               },
               {
@@ -166,33 +169,36 @@ export default function Home() {
               </p>
             </div>
             
-            {[
-              {
-                title: '제품',
-                links: ['소프트 에나멜', '하드 에나멜', '프린트 뱃지', '아크릴 뱃지'],
-              },
-              {
-                title: '고객 지원',
-                links: ['자주 묻는 질문', '주문 가이드', '배송 안내', '1:1 문의'],
-              },
-              {
-                title: '회사',
-                links: ['회사 소개', '이용약관', '개인정보처리방침'],
-              },
-            ].map((section, i) => (
-              <div key={i}>
-                <h4 className="font-semibold text-gray-300 mb-4">{section.title}</h4>
-                <ul className="space-y-3">
-                  {section.links.map((link, j) => (
-                    <li key={j}>
-                      <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            <div>
+              <h4 className="font-semibold text-gray-300 mb-4">서비스</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/order" className="text-gray-400 hover:text-white text-sm transition-colors">
+                    뱃지 만들기
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/gallery" className="text-gray-400 hover:text-white text-sm transition-colors">
+                    제작 사례 보기
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-300 mb-4">칠 종류</h4>
+              <ul className="space-y-3">
+                <li><span className="text-gray-400 text-sm">일반칠</span></li>
+                <li><span className="text-gray-400 text-sm">에폭시</span></li>
+                <li><span className="text-gray-400 text-sm">수지칠</span></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-300 mb-4">고객 지원</h4>
+              <ul className="space-y-3">
+                <li><span className="text-gray-400 text-sm">이메일: support@heybadge.com</span></li>
+                <li><span className="text-gray-400 text-sm">평일 09:00 - 18:00</span></li>
+              </ul>
+            </div>
           </div>
           
           <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
