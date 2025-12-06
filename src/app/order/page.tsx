@@ -23,7 +23,7 @@ export default function OrderPage() {
   
   // State
   const [user, setUser] = useState<any>(null)
-  const [badgeType, setBadgeType] = useState('normal')
+  const [paintType, setPaintType] = useState('normal')
   const [metalColor, setMetalColor] = useState('gold')
   const [size, setSize] = useState(30)
   const [quantity, setQuantity] = useState(10)
@@ -40,7 +40,7 @@ export default function OrderPage() {
   }, [])
 
   // Calculate price
-  const price = calculatePrice(badgeType, size, quantity)
+  const price = calculatePrice(paintType, size, quantity)
 
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,7 +113,7 @@ export default function OrderPage() {
       const { error } = await supabase.from('orders').insert({
         user_id: user.id,
         order_number: orderNumber,
-        badge_type: badgeType,
+        paint_type: paintType,
         metal_color: metalColor,
         size: size,
         quantity: quantity,
@@ -197,9 +197,9 @@ export default function OrderPage() {
                   {Object.entries(priceTable).map(([key, value]) => (
                     <button
                       key={key}
-                      onClick={() => setBadgeType(key)}
+                      onClick={() => setPaintType(key)}
                       className={`p-4 rounded-xl border-2 transition-all text-center ${
-                        badgeType === key
+                        paintType === key
                           ? 'border-primary-500 bg-primary-50'
                           : 'border-gray-200 hover:border-primary-300'
                       }`}
@@ -387,15 +387,15 @@ export default function OrderPage() {
                     // 파일 업로드 완료 상태
                     <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
                       <div className={`w-32 h-32 rounded-2xl shadow-2xl flex items-center justify-center mb-4 ${
-                        designFile.name.endsWith('.pdf') ? 'bg-gradient-to-br from-green-400 to-emerald-600' :
-                        designFile.name.endsWith('.ai') ? 'bg-gradient-to-br from-orange-400 to-pink-500' :
+                        designFile.name.toLowerCase().endsWith('.pdf') ? 'bg-gradient-to-br from-green-400 to-emerald-600' :
+                        designFile.name.toLowerCase().endsWith('.ai') ? 'bg-gradient-to-br from-orange-400 to-pink-500' :
                         'bg-gradient-to-br from-blue-400 to-cyan-500'
                       }`}>
                         <span className="text-6xl">{designIcon}</span>
                       </div>
                       <p className="font-bold text-lg mb-2">
-                        {designFile.name.endsWith('.pdf') ? 'PDF 파일' :
-                         designFile.name.endsWith('.ai') ? 'Illustrator 파일' :
+                        {designFile.name.toLowerCase().endsWith('.pdf') ? 'PDF 파일' :
+                         designFile.name.toLowerCase().endsWith('.ai') ? 'Illustrator 파일' :
                          'Photoshop 파일'}
                       </p>
                       <p className="text-sm text-gray-600 mb-1 truncate max-w-full px-4">{designFile.name}</p>

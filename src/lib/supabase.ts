@@ -22,7 +22,7 @@ export type Order = {
   user_id: string
   order_number: string
   status: 'pending' | 'confirmed' | 'producing' | 'shipping' | 'completed' | 'cancelled'
-  badge_type: string
+  paint_type: string
   metal_color: string
   size: number
   quantity: number
@@ -44,7 +44,7 @@ export type Order = {
 export type CartItem = {
   id: string
   user_id: string
-  badge_type: string
+  paint_type: string
   metal_color: string
   size: number
   quantity: number
@@ -68,6 +68,21 @@ export const priceTable = {
   'resin': { base: 3500, addon: 1000, name: '수지칠' },
 }
 
+// 기존 paint_type 값에 대한 한글 변환 (마이그레이션 전 호환성)
+export const legacyPaintTypeLabels: Record<string, string> = {
+  'soft-enamel': '소프트 에나멜',
+  'hard-enamel': '하드 에나멜',
+  'printed': '프린트 뱃지',
+  'acrylic': '아크릴 뱃지',
+}
+
+// paint_type을 한글로 변환하는 헬퍼 함수
+export function getPaintTypeName(paintType: string): string {
+  return priceTable[paintType as keyof typeof priceTable]?.name 
+    || legacyPaintTypeLabels[paintType] 
+    || paintType
+}
+
 export const sizeAddon: Record<number, number> = {
   30: 0,
   40: 1200,
@@ -75,11 +90,11 @@ export const sizeAddon: Record<number, number> = {
 }
 
 export function calculatePrice(
-  badgeType: string,
+  paintType: string,
   size: number,
   quantity: number
 ): { unitPrice: number; discount: number; total: number; discountPerUnit: number; sizeAddonPrice: number } {
-  const typePrice = priceTable[badgeType as keyof typeof priceTable] || priceTable['soft-enamel']
+  const typePrice = priceTable[paintType as keyof typeof priceTable] || priceTable['normal']
   const sizeAddonPrice = sizeAddon[size] || 0
   const baseUnitPrice = typePrice.base + typePrice.addon + sizeAddonPrice
 

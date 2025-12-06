@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
-import { createClient, Order, statusLabels, statusColors, priceTable } from '@/lib/supabase'
+import { createClient, Order, statusLabels, statusColors, getPaintTypeName } from '@/lib/supabase'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -163,7 +163,7 @@ export default function DashboardPage() {
                       <div>
                         <p className="font-bold text-lg">{order.order_number}</p>
                         <p className="text-gray-500 text-sm">
-                          {priceTable[order.badge_type as keyof typeof priceTable]?.name || order.badge_type} · {order.size}mm · {order.quantity}개
+                          {getPaintTypeName(order.paint_type)} · {order.size}mm · {order.quantity}개
                         </p>
                         <p className="text-gray-400 text-xs mt-1">
                           {new Date(order.created_at).toLocaleDateString('ko-KR', {

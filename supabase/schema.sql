@@ -22,8 +22,8 @@ CREATE TABLE orders (
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'producing', 'shipping', 'completed', 'cancelled')),
   
   -- 뱃지 옵션
-  badge_type TEXT NOT NULL, -- soft-enamel, hard-enamel, printed, acrylic
-  metal_color TEXT NOT NULL, -- gold, silver, rose-gold, black-nickel
+  paint_type TEXT NOT NULL, -- normal(일반칠), epoxy(에폭시), resin(수지칠)
+  metal_color TEXT NOT NULL, -- gold(금도금), silver(은도금)
   size INTEGER NOT NULL, -- mm
   quantity INTEGER NOT NULL,
   
@@ -54,7 +54,7 @@ CREATE TABLE orders (
 CREATE TABLE cart_items (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  badge_type TEXT NOT NULL,
+  paint_type TEXT NOT NULL,
   metal_color TEXT NOT NULL,
   size INTEGER NOT NULL,
   quantity INTEGER NOT NULL,
@@ -164,5 +164,26 @@ $$ LANGUAGE plpgsql;
 -- 버킷 이름: designs
 -- Public: false
 -- File size limit: 10MB
--- Allowed MIME types: image/png, image/jpeg, image/svg+xml
+-- Allowed MIME types: image/png, image/jpeg, image/svg+xml, application/pdf
 -- =============================================
+
+-- =============================================
+-- 기존 DB 마이그레이션 (선택사항)
+-- 기존 badge_type 컬럼을 paint_type으로 변경하고 값을 업데이트합니다.
+-- 필요한 경우에만 실행하세요.
+-- =============================================
+-- 
+-- 1. 컬럼 이름 변경
+-- ALTER TABLE orders RENAME COLUMN badge_type TO paint_type;
+-- ALTER TABLE cart_items RENAME COLUMN badge_type TO paint_type;
+-- 
+-- 2. 기존 값 마이그레이션
+-- UPDATE orders SET paint_type = 'normal' WHERE paint_type IN ('soft-enamel', 'printed', 'acrylic');
+-- UPDATE orders SET paint_type = 'epoxy' WHERE paint_type = 'hard-enamel';
+-- 
+-- UPDATE cart_items SET paint_type = 'normal' WHERE paint_type IN ('soft-enamel', 'printed', 'acrylic');
+-- UPDATE cart_items SET paint_type = 'epoxy' WHERE paint_type = 'hard-enamel';
+-- 
+-- 3. 기존 metal_color도 업데이트 (rose-gold, black-nickel 제거)
+-- UPDATE orders SET metal_color = 'gold' WHERE metal_color IN ('rose-gold', 'black-nickel');
+-- UPDATE cart_items SET metal_color = 'gold' WHERE metal_color IN ('rose-gold', 'black-nickel');
