@@ -63,7 +63,27 @@ CREATE TABLE cart_items (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- 4. 디자인 템플릿 테이블 (선택사항)
+-- 4. 제작 사례 테이블
+CREATE TABLE badge_references (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  image_url TEXT NOT NULL,
+  paint_type TEXT NOT NULL, -- normal(일반칠), epoxy(에폭시), resin(수지칠)
+  metal_color TEXT NOT NULL, -- gold(금도금), silver(은도금)
+  size TEXT NOT NULL, -- 예: "40mm", "50x30mm" 등
+  is_featured BOOLEAN DEFAULT FALSE, -- 메인에 노출 여부
+  display_order INTEGER DEFAULT 0, -- 정렬 순서
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- badge_references 테이블 RLS (모든 사용자가 읽기 가능)
+ALTER TABLE badge_references ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view badge_references" ON badge_references
+  FOR SELECT USING (true);
+
+-- 5. 디자인 템플릿 테이블 (선택사항)
 CREATE TABLE templates (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,

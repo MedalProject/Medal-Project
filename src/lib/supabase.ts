@@ -61,6 +61,19 @@ export type Template = {
   is_premium: boolean
 }
 
+export type ReferenceItem = {
+  id: string
+  title: string
+  description: string | null
+  image_url: string
+  paint_type: string
+  metal_color: string
+  size: string
+  is_featured: boolean
+  display_order: number
+  created_at: string
+}
+
 // 가격 계산 유틸리티 - 칠 종류
 export const priceTable = {
   'normal': { base: 3500, addon: 0, name: '일반칠' },
@@ -81,6 +94,18 @@ export function getPaintTypeName(paintType: string): string {
   return priceTable[paintType as keyof typeof priceTable]?.name 
     || legacyPaintTypeLabels[paintType] 
     || paintType
+}
+
+// 도금 색상 한글 변환
+export const metalColorLabels: Record<string, string> = {
+  gold: '금도금',
+  silver: '은도금',
+  'rose-gold': '로즈골드',
+  'black-nickel': '흑니켈',
+}
+
+export function getMetalColorName(metalColor: string): string {
+  return metalColorLabels[metalColor] || metalColor
 }
 
 export const sizeAddon: Record<number, number> = {
