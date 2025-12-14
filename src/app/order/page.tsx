@@ -410,7 +410,6 @@ export default function OrderPage() {
                       <div className="font-semibold text-sm mb-1">{s.label}</div>
                       <div className="text-xs text-gray-500">
                         {s.addon === 0 ? '기본' : `+₩${s.addon.toLocaleString()}`}
-                        {s.popular && ' · 인기'}
                       </div>
                     </button>
                   ))}
