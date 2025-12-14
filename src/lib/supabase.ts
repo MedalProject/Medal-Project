@@ -85,8 +85,13 @@ export function getPaintTypeName(paintType: string): string {
 
 export const sizeAddon: Record<number, number> = {
   30: 0,
-  40: 1200,
-  50: 2500,
+  40: 600,
+  50: 900,
+  60: 1300,
+  70: 1600,
+  80: 2100,
+  90: 2600,
+  100: 3000,
 }
 
 export function calculatePrice(
@@ -114,6 +119,14 @@ export function calculatePrice(
   return { unitPrice, discount, total, discountPerUnit, sizeAddonPrice }
 }
 
+// 배송비 계산
+export const SHIPPING_FEE = 3000 // 기본 배송비
+export const FREE_SHIPPING_THRESHOLD = 50000 // 무료배송 기준 금액
+
+export function calculateShippingFee(totalPrice: number): number {
+  return totalPrice >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE
+}
+
 // 주문 상태 한글 변환
 export const statusLabels: Record<string, string> = {
   pending: '결제 대기',
@@ -127,7 +140,7 @@ export const statusLabels: Record<string, string> = {
 export const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
   confirmed: 'bg-blue-100 text-blue-800',
-  producing: 'bg-purple-100 text-purple-800',
+  producing: 'bg-blue-100 text-blue-800',
   shipping: 'bg-indigo-100 text-indigo-800',
   completed: 'bg-green-100 text-green-800',
   cancelled: 'bg-gray-100 text-gray-800',

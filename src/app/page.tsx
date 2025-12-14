@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import Header from '@/components/Header'
 
 export default function Home() {
@@ -21,7 +22,7 @@ export default function Home() {
               <span className="gradient-text">현실로</span> 만드세요
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              PDF, AI, PSD 디자인 파일로 나만의 뱃지를 만들어 보세요.
+              AI 디자인 파일로 나만의 뱃지를 만들어 보세요.<br />
               실시간 가격 확인으로 투명한 견적을 받아보실 수 있습니다.
             </p>
             
@@ -30,7 +31,7 @@ export default function Home() {
               {[
                 { icon: '✓', text: '최소 1개부터 주문' },
                 { icon: '✓', text: '실시간 가격 확인' },
-                { icon: '✓', text: '7일 내 배송' },
+                { icon: '✓', text: '20일 이내 발송' },
               ].map((badge, i) => (
                 <span
                   key={i}
@@ -46,7 +47,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/order"
-                className="px-8 py-4 bg-gradient-to-r from-primary-500 to-purple-500 text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/40 hover:-translate-y-1 transition-all btn-glow"
+                className="px-8 py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/40 hover:-translate-y-1 transition-all btn-glow"
               >
                 지금 만들어보기 →
               </Link>
@@ -98,7 +99,7 @@ export default function Home() {
                 icon: '🎯',
                 title: '1개부터 주문',
                 desc: '최소 주문량 걱정 없이 1개부터 원하는 만큼만 주문하세요',
-                color: 'from-primary-500/20 to-purple-500/20',
+                color: 'from-primary-500/20 to-blue-400/20',
               },
               {
                 icon: '💰',
@@ -109,14 +110,14 @@ export default function Home() {
               {
                 icon: '🎨',
                 title: '간편한 주문',
-                desc: 'PDF, AI, PSD 파일만 업로드하면 간편하게 주문할 수 있습니다',
+                desc: 'AI 파일만 업로드하면 간편하게 주문할 수 있습니다',
                 color: 'from-green-500/20 to-emerald-500/20',
               },
               {
                 icon: '⚡',
-                title: '7일 내 배송',
+                title: '20일 이내 발송',
                 desc: '국내 제작으로 빠르고 안전하게 받아보세요',
-                color: 'from-blue-500/20 to-cyan-500/20',
+                color: 'from-blue-500/20 to-blue-400/20',
               },
             ].map((feature, i) => (
               <div
@@ -135,7 +136,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-24 px-4 bg-gradient-to-br from-primary-600 to-purple-600">
+      <section className="py-16 sm:py-24 px-4 bg-gradient-to-br from-primary-600 to-blue-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-6">
             지금 바로 시작하세요
@@ -153,57 +154,43 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 sm:py-16 px-4">
+      <footer className="bg-gray-900 text-white py-10 sm:py-12 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-8 mb-6">
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-xl flex items-center justify-center text-xl">
-                  🏷️
-                </div>
-                <span className="font-display text-2xl font-bold">Hey Badge</span>
+              <div className="mb-4">
+                <Image
+                  src="/logo.png"
+                  alt="헤이뱃지"
+                  width={120}
+                  height={40}
+                  className="h-10 w-auto brightness-0 invert"
+                />
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
+              <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
                 누구나 쉽게 나만의 뱃지를 만들 수 있는 세상.
                 창작자의 아이디어를 현실로 만들어 드립니다.
               </p>
             </div>
             
-            <div>
-              <h4 className="font-semibold text-gray-300 mb-4">서비스</h4>
-              <ul className="space-y-3">
-                <li>
-                  <Link href="/order" className="text-gray-400 hover:text-white text-sm transition-colors">
-                    뱃지 만들기
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/gallery" className="text-gray-400 hover:text-white text-sm transition-colors">
-                    제작 사례 보기
-                  </Link>
-                </li>
-              </ul>
+            <div className="text-sm text-gray-400 space-y-2">
+              <p>상호명: 헤이뱃지 | 사업자명: 바로해 | 대표자: 유윤종</p>
+              <p>사업자등록번호: 447-47-01294</p>
+              <p>주소: 서울특별시 성동구 광나루로 219 2층</p>
             </div>
-            <div>
-              <h4 className="font-semibold text-gray-300 mb-4">칠 종류</h4>
-              <ul className="space-y-3">
-                <li><span className="text-gray-400 text-sm">일반칠</span></li>
-                <li><span className="text-gray-400 text-sm">에폭시</span></li>
-                <li><span className="text-gray-400 text-sm">수지칠</span></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-300 mb-4">고객 지원</h4>
-              <ul className="space-y-3">
-                <li><span className="text-gray-400 text-sm">이메일: support@heybadge.com</span></li>
-                <li><span className="text-gray-400 text-sm">평일 09:00 - 18:00</span></li>
-              </ul>
+            
+            <div className="text-sm text-gray-400 space-y-2">
+              <p>이메일: hello.heybadge@gmail.com</p>
+              <p>전화: 010-6678-3343</p>
+              <p>평일 09:00 - 18:00</p>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <span>© 2024 Hey Badge. All rights reserved.</span>
-            <span>고객센터: 1588-0000 (평일 09:00-18:00)</span>
+          <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+            <span>© 2025 HeyBadge. All rights reserved.</span>
+            <Link href="/refund" className="hover:text-white transition-colors">
+              환불규정
+            </Link>
           </div>
         </div>
       </footer>

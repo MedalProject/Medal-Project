@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -9,6 +10,8 @@ export default function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [cartCount, setCartCount] = useState(0)
   const supabase = createClient()
 
   useEffect(() => {
@@ -16,11 +19,23 @@ export default function Header() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       setLoading(false)
+      
+      // Load cart count
+      if (user) {
+        const { count } = await supabase
+          .from('cart_items')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+        setCartCount(count || 0)
+      }
     }
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      if (!session?.user) {
+        setCartCount(0)
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -36,13 +51,15 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-18 relative">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-lg shadow-primary-500/30">
-              🏷️
-            </div>
-            <span className="font-display text-xl sm:text-2xl font-bold gradient-text">
-              Hey Badge
-            </span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="Hey Badge"
+              width={140}
+              height={45}
+              className="h-9 sm:h-11 w-auto"
+              priority
+            />
           </Link>
 
           {/* Navigation - Desktop (중앙 배치) */}
@@ -61,24 +78,83 @@ export default function Header() {
               <div className="w-20 h-10 bg-gray-100 rounded-lg animate-pulse" />
             ) : user ? (
               <>
-                <span className="text-sm text-gray-500 font-medium truncate max-w-[120px]">
-                  {user.email?.split('@')[0]}
-                </span>
                 <Link
-                  href="/dashboard"
-                  className="px-4 py-2 text-gray-600 hover:text-primary-600 font-medium transition-colors"
+                  href="/cart"
+                  className="relative px-3 py-2 text-gray-600 hover:text-primary-600 transition-colors"
                 >
-                  내 주문
+                  <span className="text-xl">🛒</span>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </span>
+                  )}
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                >
-                  로그아웃
-                </button>
+                
+                {/* 사용자 드롭다운 메뉴 */}
+                <div className="relative">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    onBlur={() => setTimeout(() => setUserMenuOpen(false), 150)}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-primary-600 font-medium transition-colors rounded-xl hover:bg-gray-50"
+                  >
+                    <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                      {user.email?.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="hidden sm:block max-w-[100px] truncate">
+                      {user.email?.split('@')[0]}
+                    </span>
+                    <svg 
+                      className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {/* 드롭다운 메뉴 */}
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900 truncate">{user.email?.split('@')[0]}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                      <Link
+                        href="/dashboard"
+                        className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <span>📦</span>
+                        내 주문
+                      </Link>
+                      <Link
+                        href="/mypage"
+                        className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <span>👤</span>
+                        마이페이지
+                      </Link>
+                      <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <span>👋</span>
+                          로그아웃
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <>
+                <Link
+                  href="/cart"
+                  className="relative px-3 py-2 text-gray-600 hover:text-primary-600 transition-colors"
+                >
+                  <span className="text-xl">🛒</span>
+                </Link>
                 <Link
                   href="/login"
                   className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
@@ -87,9 +163,9 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/signup"
-                  className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-primary-500 to-purple-500 text-white rounded-xl font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all"
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all"
                 >
-                  시작하기
+                  회원가입
                 </Link>
               </>
             )}
@@ -125,6 +201,18 @@ export default function Header() {
             >
               제작 사례 보기
             </Link>
+            <Link
+              href="/cart"
+              className="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium flex items-center justify-between"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span>🛒 장바구니</span>
+              {cartCount > 0 && (
+                <span className="bg-primary-500 text-white text-xs px-2 py-1 rounded-full">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
             {user ? (
               <>
                 <Link
@@ -133,6 +221,13 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   내 주문
+                </Link>
+                <Link
+                  href="/mypage"
+                  className="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  마이페이지
                 </Link>
                 <button
                   onClick={() => {
@@ -155,10 +250,10 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/signup"
-                  className="block mx-4 py-3 bg-gradient-to-r from-primary-500 to-purple-500 text-white rounded-xl font-semibold text-center"
+                  className="block mx-4 py-3 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-semibold text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  시작하기
+                  회원가입
                 </Link>
               </>
             )}

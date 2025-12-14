@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
+  const [paying, setPaying] = useState<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -42,6 +43,42 @@ export default function DashboardPage() {
 
     init()
   }, [router])
+
+  // 결제하기 - 배송지 정보가 없으면 입력 받고, 있으면 바로 결제 완료
+  const handlePayOrder = async (order: Order) => {
+    // 배송지 정보가 없는 경우 - 알림 후 checkout으로 이동
+    if (!order.shipping_address) {
+      // localStorage에 주문 정보 저장
+      localStorage.setItem('pendingOrderId', order.id)
+      router.push(`/checkout?orderId=${order.id}`)
+      return
+    }
+
+    // 배송지 정보가 있는 경우 - 바로 결제 완료 처리
+    if (!confirm('결제를 완료하시겠습니까?')) return
+
+    setPaying(order.id)
+
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'confirmed' })
+        .eq('id', order.id)
+
+      if (error) throw error
+
+      setOrders(orders.map(o => 
+        o.id === order.id ? { ...o, status: 'confirmed' } : o
+      ))
+
+      alert('결제가 완료되었습니다!')
+    } catch (error) {
+      console.error('Payment error:', error)
+      alert('결제 처리 중 오류가 발생했습니다.')
+    } finally {
+      setPaying(null)
+    }
+  }
 
   const handleCancelOrder = async (orderId: string) => {
     if (!user) {
@@ -140,7 +177,7 @@ export default function DashboardPage() {
               <p className="text-gray-500 mb-6">첫 번째 뱃지를 만들어보세요!</p>
               <Link
                 href="/order"
-                className="inline-block px-8 py-4 bg-gradient-to-r from-primary-500 to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-primary-500/30 hover:shadow-xl transition-all"
+                className="inline-block px-8 py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold shadow-lg shadow-primary-500/30 hover:shadow-xl transition-all"
               >
                 뱃지 만들기 →
               </Link>
@@ -235,8 +272,12 @@ export default function DashboardPage() {
                   {/* Action buttons for pending orders */}
                   {order.status === 'pending' && (
                     <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">
-                      <button className="flex-1 py-3 bg-gradient-to-r from-primary-500 to-purple-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
-                        결제하기
+                      <button 
+                        onClick={() => handlePayOrder(order)}
+                        disabled={paying === order.id}
+                        className="flex-1 py-3 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {paying === order.id ? '처리 중...' : '결제하기'}
                       </button>
                       <button 
                         onClick={() => handleCancelOrder(order.id)}

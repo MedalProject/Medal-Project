@@ -10,7 +10,7 @@ const galleryItems = [
     type: '소프트 에나멜',
     color: '금도금',
     image: '🚀',
-    gradient: 'from-purple-400 to-pink-500',
+    gradient: 'from-blue-300 to-blue-500',
   },
   {
     id: 2,
@@ -37,7 +37,7 @@ const galleryItems = [
     type: '프린트 뱃지',
     color: '금도금',
     image: '🎓',
-    gradient: 'from-blue-400 to-cyan-500',
+    gradient: 'from-blue-400 to-blue-400',
   },
   {
     id: 5,
@@ -55,7 +55,7 @@ const galleryItems = [
     type: '하드 에나멜',
     color: '로즈골드',
     image: '🎵',
-    gradient: 'from-rose-400 to-pink-500',
+    gradient: 'from-rose-400 to-blue-500',
   },
   {
     id: 7,
@@ -64,7 +64,7 @@ const galleryItems = [
     type: '소프트 에나멜',
     color: '은도금',
     image: '💻',
-    gradient: 'from-indigo-400 to-purple-500',
+    gradient: 'from-indigo-400 to-blue-400',
   },
   {
     id: 8,
@@ -129,12 +129,12 @@ export default function GalleryPage() {
 
           {/* CTA Section */}
           <div className="mt-16 text-center">
-            <div className="bg-gradient-to-r from-primary-500 to-purple-500 rounded-3xl p-8 sm:p-12 text-white">
+            <div className="bg-gradient-to-r from-primary-500 to-blue-400 rounded-3xl p-8 sm:p-12 text-white">
               <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">
                 나만의 뱃지를 만들어보세요!
               </h2>
               <p className="text-white/80 mb-8 max-w-xl mx-auto">
-                PDF, AI, PSD 파일만 있으면 7일 이내에 고품질 뱃지를 받아보실 수 있습니다.
+                AI 파일만 있으면 20일 이내에 고품질 뱃지를 받아보실 수 있습니다.
               </p>
               <a
                 href="/order"

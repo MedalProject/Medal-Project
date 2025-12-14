@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
-import { createClient, calculatePrice, priceTable } from '@/lib/supabase'
+import { createClient, calculatePrice, priceTable, calculateShippingFee, FREE_SHIPPING_THRESHOLD } from '@/lib/supabase'
 
 const metalColors = [
   { id: 'gold', name: '금도금', class: 'metal-gold' },
@@ -12,10 +12,25 @@ const metalColors = [
 ]
 
 const sizes = [
-  { size: 30, label: '30×30mm 이하', addon: 0, popular: true },
-  { size: 40, label: '40×40mm 이하', addon: 1200 },
-  { size: 50, label: '50×50mm 이하', addon: 2500 },
+  { size: 30, label: '30×30mm 이하', addon: 0 },
+  { size: 40, label: '40×40mm 이하', addon: 600 },
+  { size: 50, label: '50×50mm 이하', addon: 900 },
+  { size: 60, label: '60×60mm 이하', addon: 1300 },
+  { size: 70, label: '70×70mm 이하', addon: 1600 },
+  { size: 80, label: '80×80mm 이하', addon: 2100 },
+  { size: 90, label: '90×90mm 이하', addon: 2600 },
+  { size: 100, label: '100×100mm 이하', addon: 3000 },
 ]
+
+// 주문 항목 타입
+type OrderItem = {
+  id: string
+  file: File
+  paintType: string
+  metalColor: string
+  size: number
+  quantity: number
+}
 
 export default function OrderPage() {
   const router = useRouter()
@@ -26,11 +41,18 @@ export default function OrderPage() {
   const [paintType, setPaintType] = useState('normal')
   const [metalColor, setMetalColor] = useState('gold')
   const [size, setSize] = useState(30)
-  const [quantity, setQuantity] = useState(10)
-  const [designIcon, setDesignIcon] = useState('📤')
+  const [quantity, setQuantity] = useState(1)
   const [designFile, setDesignFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState('')
+  const [toastType, setToastType] = useState<'success' | 'error'>('success')
+  const [uploadHighlight, setUploadHighlight] = useState(false)
+  
+  // 주문 항목 목록
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([])
+  
+  // 업로드 영역 ref
+  const uploadRef = useRef<HTMLLabelElement>(null)
 
   // Check auth
   useEffect(() => {
@@ -39,8 +61,16 @@ export default function OrderPage() {
     })
   }, [])
 
-  // Calculate price
+  // Calculate price for current selection
   const price = calculatePrice(paintType, size, quantity)
+
+  // Calculate total price for all items
+  const totalPrice = orderItems.reduce((sum, item) => {
+    const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
+    return sum + itemPrice.total
+  }, 0)
+
+  const totalQuantity = orderItems.reduce((sum, item) => sum + item.quantity, 0)
 
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,55 +78,98 @@ export default function OrderPage() {
     if (file) {
       const fileExt = file.name.split('.').pop()?.toLowerCase()
       
-      // 지원 파일 형식 확인
-      if (fileExt === 'pdf' || fileExt === 'ai' || fileExt === 'psd') {
+      if (fileExt === 'ai') {
         setDesignFile(file)
-        
-        if (fileExt === 'pdf') {
-          setDesignIcon('📄')
-        } else if (fileExt === 'ai') {
-          setDesignIcon('🎨')
-        } else if (fileExt === 'psd') {
-          setDesignIcon('🖌️')
-        }
-        
         showToast('파일 업로드 완료!')
       } else {
-        showToast('PDF, AI, PSD 파일만 업로드 가능합니다.')
+        showToast('AI 파일만 업로드 가능합니다.', 'error')
       }
     }
   }
 
+  // 항목 추가
+  const handleAddItem = () => {
+    if (!designFile) {
+      showToast('⚠️ 디자인 파일을 먼저 업로드해주세요!', 'error')
+      highlightUpload()
+      return
+    }
+
+    const newItem: OrderItem = {
+      id: Date.now().toString(),
+      file: designFile,
+      paintType,
+      metalColor,
+      size,
+      quantity: quantity || 1,
+    }
+
+    setOrderItems([...orderItems, newItem])
+    setDesignFile(null)
+    setQuantity(1)
+    showToast('항목이 추가되었습니다!')
+    
+    // 파일 입력 초기화
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    if (fileInput) fileInput.value = ''
+  }
+
+  // 항목 삭제
+  const handleRemoveItem = (id: string) => {
+    setOrderItems(orderItems.filter(item => item.id !== id))
+    showToast('항목이 삭제되었습니다.')
+  }
+
+  // 항목 수량 변경
+  const handleItemQuantityChange = (id: string, newQuantity: number) => {
+    setOrderItems(orderItems.map(item => 
+      item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
+    ))
+  }
+
   // Show toast
-  const showToast = (message: string) => {
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast(message)
+    setToastType(type)
     setTimeout(() => setToast(''), 3000)
   }
 
-  // Handle order
-  const handleOrder = async () => {
+  // 업로드 영역 하이라이트 + 스크롤
+  const highlightUpload = () => {
+    setUploadHighlight(true)
+    setTimeout(() => setUploadHighlight(false), 2000)
+    
+    // 업로드 영역으로 부드럽게 스크롤
+    uploadRef.current?.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'center' 
+    })
+  }
+
+  // 장바구니에 담기
+  const handleAddToCart = async () => {
     if (!user) {
       router.push('/login')
       return
     }
 
-    if (!designFile) {
-      showToast('디자인 파일을 업로드해주세요.')
+    if (orderItems.length === 0) {
+      showToast('장바구니에 담을 항목을 추가해주세요.')
       return
     }
 
     setLoading(true)
 
     try {
-      // Upload design file if exists
-      let designUrl = null
-      if (designFile) {
-        const fileExt = designFile.name.split('.').pop()
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`
+      for (const item of orderItems) {
+        // Upload design file
+        let designUrl = null
+        const fileExt = item.file.name.split('.').pop()
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
         
         const { error: uploadError } = await supabase.storage
           .from('designs')
-          .upload(fileName, designFile)
+          .upload(fileName, item.file)
 
         if (!uploadError) {
           const { data: { publicUrl } } = supabase.storage
@@ -104,37 +177,94 @@ export default function OrderPage() {
             .getPublicUrl(fileName)
           designUrl = publicUrl
         }
+
+        // Add to cart
+        const { error } = await supabase.from('cart_items').insert({
+          user_id: user.id,
+          paint_type: item.paintType,
+          metal_color: item.metalColor,
+          size: item.size,
+          quantity: item.quantity,
+          design_url: designUrl,
+          design_name: item.file.name,
+        })
+
+        if (error) throw error
       }
 
-      // Generate order number
-      const orderNumber = `BF${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
+      showToast('장바구니에 담았습니다!')
+      setOrderItems([])
+    } catch (error) {
+      console.error('Cart error:', error)
+      showToast('장바구니 추가 중 오류가 발생했습니다.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      // Create order
-      const { error } = await supabase.from('orders').insert({
-        user_id: user.id,
-        order_number: orderNumber,
-        paint_type: paintType,
-        metal_color: metalColor,
-        size: size,
-        quantity: quantity,
-        design_url: designUrl,
-        design_name: designFile?.name || designIcon,
-        unit_price: price.unitPrice,
-        discount_amount: price.discount,
-        total_price: price.total,
-        status: 'pending',
-      })
+  // Handle order - 장바구니에 담고 checkout으로 이동
+  const handleOrder = async () => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
 
-      if (error) throw error
+    if (orderItems.length === 0) {
+      showToast('주문할 항목을 추가해주세요.')
+      return
+    }
 
-      showToast('주문이 생성되었습니다!')
-      router.push('/dashboard')
+    setLoading(true)
+
+    try {
+      // 먼저 장바구니에 모든 항목 추가
+      for (const item of orderItems) {
+        // Upload design file
+        let designUrl = null
+        const fileExt = item.file.name.split('.').pop()
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('designs')
+          .upload(fileName, item.file)
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('designs')
+            .getPublicUrl(fileName)
+          designUrl = publicUrl
+        }
+
+        // Add to cart
+        const { error } = await supabase.from('cart_items').insert({
+          user_id: user.id,
+          paint_type: item.paintType,
+          metal_color: item.metalColor,
+          size: item.size,
+          quantity: item.quantity,
+          design_url: designUrl,
+          design_name: item.file.name,
+        })
+
+        if (error) throw error
+      }
+
+      // checkout 페이지로 이동
+      router.push('/checkout')
     } catch (error) {
       console.error('Order error:', error)
       showToast('주문 중 오류가 발생했습니다.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const getPaintTypeName = (type: string) => {
+    return priceTable[type as keyof typeof priceTable]?.name || type
+  }
+
+  const getMetalColorName = (color: string) => {
+    return metalColors.find(m => m.id === color)?.name || color
   }
 
   return (
@@ -165,13 +295,25 @@ export default function OrderPage() {
                   </div>
                 </div>
 
-                <label className="block border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50/50 transition-all">
-                  <input type="file" className="hidden" accept=".pdf,.ai,.psd,application/pdf,application/postscript" onChange={handleFileChange} />
-                  <div className="w-16 h-16 bg-gradient-to-r from-primary-500 to-purple-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                    📤
+                <label 
+                  ref={uploadRef}
+                  className={`block border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
+                  uploadHighlight 
+                    ? 'border-red-500 bg-red-50 animate-pulse' 
+                    : 'border-gray-200 hover:border-primary-400 hover:bg-primary-50/50'
+                }`}>
+                  <input type="file" className="hidden" accept=".ai,application/postscript" onChange={handleFileChange} />
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 ${
+                    uploadHighlight 
+                      ? 'bg-red-500' 
+                      : 'bg-gradient-to-r from-primary-500 to-blue-400'
+                  }`}>
+                    {uploadHighlight ? '⚠️' : '📤'}
                   </div>
-                  <p className="font-semibold mb-2">디자인 파일을 드래그하거나 클릭하세요</p>
-                  <p className="text-gray-400 text-sm">PDF, AI, PSD 파일 지원 (최대 50MB)</p>
+                  <p className={`font-semibold mb-2 ${uploadHighlight ? 'text-red-600' : ''}`}>
+                    {uploadHighlight ? '👆 여기를 클릭해서 파일을 업로드하세요!' : '디자인 파일을 드래그하거나 클릭하세요'}
+                  </p>
+                  <p className="text-gray-400 text-sm">AI 파일만 지원 (최대 50MB)</p>
                   {designFile && (
                     <div className="mt-4 space-y-2">
                       <p className="text-primary-600 font-medium">✓ {designFile.name}</p>
@@ -222,7 +364,7 @@ export default function OrderPage() {
                   <div className="w-11 h-11 bg-green-100 rounded-xl flex items-center justify-center text-xl">🪙</div>
                   <div>
                     <h2 className="font-bold text-lg">도금 색상</h2>
-                    <p className="text-gray-500 text-sm">실시간으로 미리보기에 반영됩니다</p>
+                    <p className="text-gray-500 text-sm">원하는 도금 색상을 선택하세요</p>
                   </div>
                 </div>
 
@@ -278,7 +420,7 @@ export default function OrderPage() {
               {/* Quantity */}
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-11 h-11 bg-purple-100 rounded-xl flex items-center justify-center text-xl">📦</div>
+                  <div className="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center text-xl">📦</div>
                   <div>
                     <h2 className="font-bold text-lg">수량</h2>
                     <p className="text-gray-500 text-sm">많이 주문할수록 더 많이 할인됩니다</p>
@@ -286,22 +428,35 @@ export default function OrderPage() {
                 </div>
 
                 {/* 수량 입력 */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-4">
                   <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
                     <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 10))}
+                      onClick={() => setQuantity(Math.max(1, (quantity || 1) - 1))}
                       className="w-12 h-12 text-xl hover:bg-primary-500 hover:text-white transition-colors"
                     >
                       −
                     </button>
                     <input
                       type="number"
-                      value={quantity}
-                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-24 h-12 text-center font-bold text-lg bg-white border-0"
+                      value={quantity || ''}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        if (val === '') {
+                          setQuantity(0)
+                        } else {
+                          setQuantity(parseInt(val) || 0)
+                        }
+                      }}
+                      onBlur={() => {
+                        if (!quantity || quantity < 1) {
+                          setQuantity(1)
+                        }
+                      }}
+                      className="w-24 h-12 text-center font-bold text-lg bg-white border-0 no-spinner"
+                      min="1"
                     />
                     <button
-                      onClick={() => setQuantity(quantity + 10)}
+                      onClick={() => setQuantity((quantity || 0) + 1)}
                       className="w-12 h-12 text-xl hover:bg-primary-500 hover:text-white transition-colors"
                     >
                       +
@@ -310,9 +465,29 @@ export default function OrderPage() {
                   <span className="text-gray-500 text-sm">개</span>
                 </div>
 
-                {/* 수량별 할인 테이블 */}
+                {/* 빠른 수량 추가 */}
+                <div className="flex flex-wrap items-center gap-2 mb-6">
+                  <span className="text-sm text-gray-500">빠른 추가:</span>
+                  {[10, 100, 1000].map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => setQuantity((quantity || 0) + q)}
+                      className="px-4 py-2 rounded-xl text-sm font-bold bg-primary-50 text-primary-600 hover:bg-primary-500 hover:text-white transition-all"
+                    >
+                      +{q.toLocaleString()}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setQuantity(1)}
+                    className="px-4 py-2 rounded-xl text-sm font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-all"
+                  >
+                    초기화
+                  </button>
+                </div>
+
+                {/* 수량별 할인 안내 */}
                 <div className="bg-gray-50 rounded-2xl p-4 mb-4">
-                  <p className="text-sm font-semibold text-gray-700 mb-3">📊 수량별 할인 혜택</p>
+                  <p className="text-sm font-semibold text-gray-700 mb-3">수량별 할인 혜택 (자동 적용)</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {[
                       { min: 1, max: 99, discount: 0, label: '1~99개' },
@@ -324,13 +499,12 @@ export default function OrderPage() {
                     ].map((tier) => {
                       const isActive = quantity >= tier.min && quantity <= tier.max
                       return (
-                        <button
+                        <div
                           key={tier.label}
-                          onClick={() => setQuantity(tier.min)}
                           className={`p-3 rounded-xl text-center transition-all ${
                             isActive
                               ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
-                              : 'bg-white border border-gray-200 hover:border-primary-300'
+                              : 'bg-white border border-gray-200'
                           }`}
                         >
                           <div className={`text-xs mb-1 ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
@@ -344,7 +518,7 @@ export default function OrderPage() {
                               개당 할인
                             </div>
                           )}
-                        </button>
+                        </div>
                       )
                     })}
                   </div>
@@ -352,7 +526,7 @@ export default function OrderPage() {
 
                 {/* 현재 적용된 할인 */}
                 {price.discountPerUnit > 0 && (
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl flex items-center gap-3">
+                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg">
                       🎉
                     </div>
@@ -365,7 +539,109 @@ export default function OrderPage() {
                     </div>
                   </div>
                 )}
+
+                {/* 현재 선택 예상 가격 */}
+                <div className="bg-gray-900 rounded-2xl p-5 text-white">
+                  <div className="flex justify-between text-sm text-gray-400 mb-2">
+                    <span>{getPaintTypeName(paintType)} / {getMetalColorName(metalColor)} / {size}mm</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-400 mb-2">
+                    <span>단가</span>
+                    <span>₩{price.unitPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-400 mb-2">
+                    <span>수량</span>
+                    <span>× {quantity || 1}개</span>
+                  </div>
+                  {price.discountPerUnit > 0 && (
+                    <div className="flex justify-between text-sm text-green-400 mb-2">
+                      <span>할인</span>
+                      <span>-₩{price.discount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="border-t border-gray-700 pt-3 mt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">예상 금액</span>
+                      <span className="font-display text-2xl font-bold text-amber-400">
+                        ₩{price.total.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* 항목 추가 버튼 */}
+              <button
+                onClick={handleAddItem}
+                className="w-full py-4 bg-primary-500 text-white rounded-2xl font-bold text-lg hover:bg-primary-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <span className="text-2xl">+</span>
+                주문 목록에 추가하기
+              </button>
+
+              {/* 추가된 항목 목록 */}
+              {orderItems.length > 0 && (
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-11 h-11 bg-primary-100 rounded-xl flex items-center justify-center text-xl">🛒</div>
+                    <div>
+                      <h2 className="font-bold text-lg">주문 목록</h2>
+                      <p className="text-gray-500 text-sm">{orderItems.length}개의 디자인이 추가되었습니다</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {orderItems.map((item, index) => {
+                      const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
+                      return (
+                        <div key={item.id} className="border border-gray-200 rounded-2xl p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-900 truncate">{item.file.name}</p>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {getPaintTypeName(item.paintType)} / {getMetalColorName(item.metalColor)} / {item.size}mm
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => handleRemoveItem(item.id)}
+                              className="text-gray-400 hover:text-red-500 text-xl transition-colors"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
+                              <button
+                                onClick={() => handleItemQuantityChange(item.id, item.quantity - 1)}
+                                className="w-10 h-10 text-lg hover:bg-primary-500 hover:text-white transition-colors"
+                              >
+                                −
+                              </button>
+                              <input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) => handleItemQuantityChange(item.id, parseInt(e.target.value) || 1)}
+                                className="w-16 h-10 text-center font-bold bg-white border-0"
+                                min="1"
+                              />
+                              <button
+                                onClick={() => handleItemQuantityChange(item.id, item.quantity + 1)}
+                                className="w-10 h-10 text-lg hover:bg-primary-500 hover:text-white transition-colors"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <p className="font-bold text-lg text-gray-900">
+                              ₩{itemPrice.total.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Preview Column */}
@@ -373,99 +649,167 @@ export default function OrderPage() {
               <div className="bg-white rounded-3xl p-6 shadow-sm sticky top-24">
                 <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
                   <span className="text-primary-500">●</span>
-                  실시간 미리보기
+                  {orderItems.length > 0 ? '주문 요약' : '실시간 미리보기'}
                 </h3>
 
-                {/* Badge Preview */}
-                <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-10" style={{
-                    backgroundImage: 'linear-gradient(90deg, transparent 49.5%, #000 49.5%, #000 50.5%, transparent 50.5%), linear-gradient(0deg, transparent 49.5%, #000 49.5%, #000 50.5%, transparent 50.5%)',
-                    backgroundSize: '20px 20px'
-                  }} />
+                {orderItems.length > 0 ? (
+                  // 주문 요약 보기
+                  <>
+                    <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
+                      {orderItems.map((item, index) => {
+                        const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
+                        return (
+                          <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm truncate">{item.file.name}</p>
+                              <p className="text-xs text-gray-500">{item.quantity}개</p>
+                            </div>
+                            <p className="font-semibold text-sm ml-2">₩{itemPrice.total.toLocaleString()}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Total Price */}
+                    <div className="bg-gray-900 rounded-2xl p-6 text-white">
+                      <div className="flex justify-between text-sm text-gray-400 mb-3">
+                        <span>총 디자인</span>
+                        <span>{orderItems.length}개</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-400 mb-3">
+                        <span>총 수량</span>
+                        <span>{totalQuantity.toLocaleString()}개</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-400 mb-3">
+                        <span>배송비</span>
+                        {calculateShippingFee(totalPrice) === 0 ? (
+                          <span className="text-green-400">무료</span>
+                        ) : (
+                          <span>₩{calculateShippingFee(totalPrice).toLocaleString()}</span>
+                        )}
+                      </div>
+                      {totalPrice > 0 && totalPrice < FREE_SHIPPING_THRESHOLD && (
+                        <p className="text-xs text-blue-400 mb-3">
+                          💡 ₩{(FREE_SHIPPING_THRESHOLD - totalPrice).toLocaleString()} 더 담으면 무료배송!
+                        </p>
+                      )}
+                      <div className="border-t border-gray-700 pt-4 mt-4">
+                        <div className="flex justify-between items-end">
+                          <span className="text-gray-400">총 결제 금액</span>
+                          <span className="font-display text-3xl font-bold text-amber-400">
+                            ₩{(totalPrice + calculateShippingFee(totalPrice)).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  // 미리보기 (기존)
+                  <>
+                    <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden">
+                      <div className="absolute inset-0 opacity-10" style={{
+                        backgroundImage: 'linear-gradient(90deg, transparent 49.5%, #000 49.5%, #000 50.5%, transparent 50.5%), linear-gradient(0deg, transparent 49.5%, #000 49.5%, #000 50.5%, transparent 50.5%)',
+                        backgroundSize: '20px 20px'
+                      }} />
+                      
+                      {designFile ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                          <p className="font-bold text-xl text-gray-800 mb-3">
+                            {designFile.name.toLowerCase().endsWith('.pdf') ? 'PDF 파일' :
+                             designFile.name.toLowerCase().endsWith('.ai') ? 'Illustrator 파일' :
+                             'Photoshop 파일'}
+                          </p>
+                          <p className="text-base text-gray-700 mb-2 truncate max-w-full px-4">{designFile.name}</p>
+                          <p className="text-sm text-gray-500 mb-6">
+                            {(designFile.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                          <div className="px-5 py-3 bg-green-100 text-green-700 rounded-xl text-base font-medium flex items-center gap-2">
+                            <span className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✓</span>
+                            파일 업로드 완료
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                          <div className={`w-32 h-32 rounded-full ${metalColors.find(m => m.id === metalColor)?.class} shadow-2xl flex items-center justify-center mb-4 badge-float`}>
+                            <span className="text-amber-900 font-bold text-sm">DESIGN</span>
+                          </div>
+                          <p className="font-medium text-gray-600 mb-2">디자인 파일을 업로드해주세요</p>
+                          <p className="text-xs text-gray-400">AI 파일만 지원</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Price Display */}
+                    <div className="bg-gray-900 rounded-2xl p-6 text-white">
+                      <div className="flex justify-between text-sm text-gray-400 mb-3">
+                        <span>단가 (크기 추가요금 포함)</span>
+                        <span>₩{price.unitPrice.toLocaleString()}</span>
+                      </div>
+                      {price.sizeAddonPrice > 0 && (
+                        <div className="flex justify-between text-sm text-gray-500 mb-3 text-xs">
+                          <span className="pl-2">└ 크기 추가요금</span>
+                          <span>+₩{price.sizeAddonPrice.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm text-gray-400 mb-3">
+                        <span>수량</span>
+                        <span>× {quantity}개</span>
+                      </div>
+                      {price.discountPerUnit > 0 && (
+                        <div className="flex justify-between text-sm text-green-400 mb-3">
+                          <span>대량 할인 (개당 -₩{price.discountPerUnit.toLocaleString()})</span>
+                          <span>-₩{price.discount.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="border-t border-gray-700 pt-4 mt-4">
+                        <div className="flex justify-between items-end">
+                          <span className="text-gray-400">예상 금액</span>
+                          <span className="font-display text-3xl font-bold text-amber-400">
+                            ₩{price.total.toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-right text-xs text-gray-500 mt-2">
+                          개당 ₩{quantity > 0 ? Math.round(price.total / quantity).toLocaleString() : 0}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* CTA Buttons */}
+                <div className="mt-6 space-y-3">
+                  <button
+                    onClick={handleOrder}
+                    disabled={loading || orderItems.length === 0}
+                    className="w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? '처리 중...' : 
+                     !user ? '로그인하고 주문하기' : 
+                     orderItems.length === 0 ? '항목을 추가해주세요' :
+                     `${orderItems.length}건 바로 주문하기`}
+                  </button>
                   
-                  {designFile ? (
-                    // 파일 업로드 완료 상태
-                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                      <div className={`w-32 h-32 rounded-2xl shadow-2xl flex items-center justify-center mb-4 ${
-                        designFile.name.toLowerCase().endsWith('.pdf') ? 'bg-gradient-to-br from-green-400 to-emerald-600' :
-                        designFile.name.toLowerCase().endsWith('.ai') ? 'bg-gradient-to-br from-orange-400 to-pink-500' :
-                        'bg-gradient-to-br from-blue-400 to-cyan-500'
-                      }`}>
-                        <span className="text-6xl">{designIcon}</span>
-                      </div>
-                      <p className="font-bold text-lg mb-2">
-                        {designFile.name.toLowerCase().endsWith('.pdf') ? 'PDF 파일' :
-                         designFile.name.toLowerCase().endsWith('.ai') ? 'Illustrator 파일' :
-                         'Photoshop 파일'}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-1 truncate max-w-full px-4">{designFile.name}</p>
-                      <p className="text-xs text-gray-500 mb-4">
-                        {(designFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                      <div className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
-                        <span className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">✓</span>
-                        파일 업로드 완료
-                      </div>
-                    </div>
-                  ) : (
-                    // 파일 업로드 대기 상태
-                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                      <div className={`w-32 h-32 rounded-full ${metalColors.find(m => m.id === metalColor)?.class} shadow-2xl flex items-center justify-center mb-4 badge-float`}>
-                        <span className="text-5xl">📤</span>
-                      </div>
-                      <p className="font-medium text-gray-600 mb-2">디자인 파일을 업로드해주세요</p>
-                      <p className="text-xs text-gray-400">PDF, AI, PSD 파일 지원</p>
-                    </div>
-                  )}
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={loading || orderItems.length === 0}
+                    className="w-full py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold text-lg hover:border-primary-500 hover:text-primary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {orderItems.length === 0 ? '🛒 장바구니에 담기' : `🛒 ${orderItems.length}건 장바구니에 담기`}
+                  </button>
                 </div>
-
-                {/* Price Display */}
-                <div className="bg-gray-900 rounded-2xl p-6 text-white">
-                  <div className="flex justify-between text-sm text-gray-400 mb-3">
-                    <span>단가 (크기 추가요금 포함)</span>
-                    <span>₩{price.unitPrice.toLocaleString()}</span>
-                  </div>
-                  {price.sizeAddonPrice > 0 && (
-                    <div className="flex justify-between text-sm text-gray-500 mb-3 text-xs">
-                      <span className="pl-2">└ 크기 추가요금</span>
-                      <span>+₩{price.sizeAddonPrice.toLocaleString()}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-sm text-gray-400 mb-3">
-                    <span>수량</span>
-                    <span>× {quantity}개</span>
-                  </div>
-                  {price.discountPerUnit > 0 && (
-                    <div className="flex justify-between text-sm text-green-400 mb-3">
-                      <span>대량 할인 (개당 -₩{price.discountPerUnit.toLocaleString()})</span>
-                      <span>-₩{price.discount.toLocaleString()}</span>
-                    </div>
-                  )}
-                  <div className="border-t border-gray-700 pt-4 mt-4">
-                    <div className="flex justify-between items-end">
-                      <span className="text-gray-400">총 예상 금액</span>
-                      <span className="font-display text-3xl font-bold text-amber-400">
-                        ₩{price.total.toLocaleString()}
-                      </span>
-                    </div>
-                    <p className="text-right text-xs text-gray-500 mt-2">
-                      개당 ₩{Math.round(price.total / quantity).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                {/* CTA Button */}
-                <button
-                  onClick={handleOrder}
-                  disabled={loading}
-                  className="w-full mt-6 py-4 bg-gradient-to-r from-primary-500 to-purple-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
-                >
-                  {loading ? '주문 처리 중...' : user ? '주문하기' : '로그인하고 주문하기'}
-                </button>
 
                 <p className="text-center text-sm text-gray-500 mt-4">
-                  🚀 예상 배송일: 7일 이내
+                  🚀 예상 발송일: 20일 이내
                 </p>
+
+                <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                  <Link 
+                    href="/refund" 
+                    className="text-sm text-gray-400 hover:text-primary-500 transition-colors"
+                  >
+                    환불규정 확인하기 →
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -474,8 +818,16 @@ export default function OrderPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-8 right-8 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-slide-up z-50">
-          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">✓</div>
+        <div className={`fixed bottom-8 right-8 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 ${
+          toastType === 'error' 
+            ? 'bg-red-600 text-white animate-shake' 
+            : 'bg-gray-900 text-white animate-slide-up'
+        }`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            toastType === 'error' ? 'bg-white text-red-600' : 'bg-green-500 text-white'
+          }`}>
+            {toastType === 'error' ? '!' : '✓'}
+          </div>
           {toast}
         </div>
       )}
