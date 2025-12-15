@@ -174,7 +174,7 @@ export default function Home() {
             </div>
             
             <div className="text-sm text-gray-400 space-y-2">
-              <p>상호명: 헤이뱃지 | 사업자명: 바로해 | 대표자: 유윤종</p>
+              <p>상호명: 바로해 | 사업자명: 바로해 | 대표자: 유윤종</p>
               <p>사업자등록번호: 447-47-01294</p>
               <p>주소: 서울특별시 성동구 광나루로 219 2층</p>
             </div>
