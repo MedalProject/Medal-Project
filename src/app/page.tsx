@@ -168,8 +168,7 @@ export default function Home() {
                 />
               </div>
               <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-                누구나 쉽게 나만의 뱃지를 만들 수 있는 세상.
-                창작자의 아이디어를 현실로 만들어 드립니다.
+                글로벌 기업이 선택한 뱃지 제작 서비스
               </p>
             </div>
             

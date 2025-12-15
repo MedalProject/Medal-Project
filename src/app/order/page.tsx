@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
-import { createClient, calculatePrice, priceTable, calculateShippingFee, FREE_SHIPPING_THRESHOLD } from '@/lib/supabase'
+import { createClient, calculatePrice, priceTable, calculateShippingFee, FREE_SHIPPING_THRESHOLD, MOLD_FEE, UserDesign } from '@/lib/supabase'
 
 const metalColors = [
   { id: 'gold', name: '금도금', class: 'metal-gold' },
@@ -25,7 +25,11 @@ const sizes = [
 // 주문 항목 타입
 type OrderItem = {
   id: string
-  file: File
+  file: File | null          // 신규 디자인일 때만 사용
+  designId: string | null    // 기존 디자인 재사용 시
+  designUrl: string | null   // 기존 디자인 URL
+  designName: string         // 파일명 또는 디자인명
+  isNewMold: boolean         // 신규 금형 여부 (금형비 부과)
   paintType: string
   metalColor: string
   size: number
@@ -48,6 +52,12 @@ export default function OrderPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success')
   const [uploadHighlight, setUploadHighlight] = useState(false)
   
+  // 디자인 선택 관련 상태
+  const [designMode, setDesignMode] = useState<'new' | 'existing'>('new')
+  const [userDesigns, setUserDesigns] = useState<UserDesign[]>([])
+  const [selectedDesign, setSelectedDesign] = useState<UserDesign | null>(null)
+  const [designsLoading, setDesignsLoading] = useState(false)
+  
   // 주문 항목 목록
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   
@@ -58,16 +68,50 @@ export default function OrderPage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
+      if (user) {
+        loadUserDesigns(user.id)
+      }
     })
   }, [])
+
+  // 사용자의 기존 디자인 목록 로드
+  const loadUserDesigns = async (userId: string) => {
+    setDesignsLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('user_designs')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        // 테이블이 없는 경우 빈 배열로 처리
+        console.log('user_designs table not found or error:', error.message)
+        setUserDesigns([])
+        return
+      }
+      setUserDesigns(data || [])
+    } catch (error) {
+      console.error('Failed to load user designs:', error)
+      setUserDesigns([])
+    } finally {
+      setDesignsLoading(false)
+    }
+  }
 
   // Calculate price for current selection
   const price = calculatePrice(paintType, size, quantity)
 
-  // Calculate total price for all items
+  // Calculate total price for all items (금형비 포함)
   const totalPrice = orderItems.reduce((sum, item) => {
     const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
-    return sum + itemPrice.total
+    const moldFee = item.isNewMold ? MOLD_FEE : 0
+    return sum + itemPrice.total + moldFee
+  }, 0)
+
+  // 금형비 총합
+  const totalMoldFee = orderItems.reduce((sum, item) => {
+    return sum + (item.isNewMold ? MOLD_FEE : 0)
   }, 0)
 
   const totalQuantity = orderItems.reduce((sum, item) => sum + item.quantity, 0)
@@ -89,29 +133,61 @@ export default function OrderPage() {
 
   // 항목 추가
   const handleAddItem = () => {
-    if (!designFile) {
-      showToast('⚠️ 디자인 파일을 먼저 업로드해주세요!', 'error')
-      highlightUpload()
-      return
-    }
+    // 신규 디자인 모드일 때
+    if (designMode === 'new') {
+      if (!designFile) {
+        showToast('⚠️ 디자인 파일을 먼저 업로드해주세요!', 'error')
+        highlightUpload()
+        return
+      }
 
-    const newItem: OrderItem = {
-      id: Date.now().toString(),
-      file: designFile,
-      paintType,
-      metalColor,
-      size,
-      quantity: quantity || 1,
-    }
+      const newItem: OrderItem = {
+        id: Date.now().toString(),
+        file: designFile,
+        designId: null,
+        designUrl: null,
+        designName: designFile.name,
+        isNewMold: true,
+        paintType,
+        metalColor,
+        size,
+        quantity: quantity || 1,
+      }
 
-    setOrderItems([...orderItems, newItem])
-    setDesignFile(null)
-    setQuantity(1)
-    showToast('항목이 추가되었습니다!')
-    
-    // 파일 입력 초기화
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-    if (fileInput) fileInput.value = ''
+      setOrderItems([...orderItems, newItem])
+      setDesignFile(null)
+      setQuantity(1)
+      showToast('항목이 추가되었습니다! (신규 금형)')
+      
+      // 파일 입력 초기화
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+      if (fileInput) fileInput.value = ''
+    } 
+    // 기존 디자인 재사용 모드일 때
+    else {
+      if (!selectedDesign) {
+        showToast('⚠️ 재사용할 디자인을 선택해주세요!', 'error')
+        return
+      }
+
+      const newItem: OrderItem = {
+        id: Date.now().toString(),
+        file: null,
+        designId: selectedDesign.id,
+        designUrl: selectedDesign.design_url,
+        designName: selectedDesign.design_name,
+        isNewMold: false,
+        paintType,
+        metalColor,
+        size,
+        quantity: quantity || 1,
+      }
+
+      setOrderItems([...orderItems, newItem])
+      setSelectedDesign(null)
+      setQuantity(1)
+      showToast('항목이 추가되었습니다! (기존 금형 재사용)')
+    }
   }
 
   // 항목 삭제
@@ -146,6 +222,53 @@ export default function OrderPage() {
     })
   }
 
+  // 디자인 파일 업로드 및 user_designs에 저장
+  const uploadAndSaveDesign = async (file: File, userId: string): Promise<{ designUrl: string; designId: string | null } | null> => {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from('designs')
+        .upload(fileName, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('designs')
+        .getPublicUrl(fileName)
+
+      // user_designs 테이블에 저장 시도 (테이블이 없으면 스킵)
+      let designId: string | null = null
+      try {
+        const { data: designData, error: designError } = await supabase
+          .from('user_designs')
+          .insert({
+            user_id: userId,
+            design_url: publicUrl,
+            design_name: file.name,
+            memo: null,
+            preview_url: null,
+            mold_completed: false,
+          })
+          .select()
+          .single()
+
+        if (!designError && designData) {
+          designId = designData.id
+        }
+      } catch (e) {
+        // user_designs 테이블이 없는 경우 무시
+        console.log('user_designs table not found, skipping...')
+      }
+
+      return { designUrl: publicUrl, designId }
+    } catch (error) {
+      console.error('Design upload error:', error)
+      return null
+    }
+  }
+
   // 장바구니에 담기
   const handleAddToCart = async () => {
     if (!user) {
@@ -162,23 +285,19 @@ export default function OrderPage() {
 
     try {
       for (const item of orderItems) {
-        // Upload design file
-        let designUrl = null
-        const fileExt = item.file.name.split('.').pop()
-        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('designs')
-          .upload(fileName, item.file)
+        let designUrl = item.designUrl
+        let designId = item.designId
 
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('designs')
-            .getPublicUrl(fileName)
-          designUrl = publicUrl
+        // 신규 디자인인 경우 업로드 및 저장
+        if (item.isNewMold && item.file) {
+          const result = await uploadAndSaveDesign(item.file, user.id)
+          if (result) {
+            designUrl = result.designUrl
+            designId = result.designId
+          }
         }
 
-        // Add to cart
+        // Add to cart (design_id, is_new_mold는 DB 스키마 업데이트 후 활성화)
         const { error } = await supabase.from('cart_items').insert({
           user_id: user.id,
           paint_type: item.paintType,
@@ -186,7 +305,9 @@ export default function OrderPage() {
           size: item.size,
           quantity: item.quantity,
           design_url: designUrl,
-          design_name: item.file.name,
+          design_name: item.designName,
+          // design_id: designId,        // TODO: DB 스키마 업데이트 후 활성화
+          // is_new_mold: item.isNewMold, // TODO: DB 스키마 업데이트 후 활성화
         })
 
         if (error) throw error
@@ -194,6 +315,8 @@ export default function OrderPage() {
 
       showToast('장바구니에 담았습니다!')
       setOrderItems([])
+      // 디자인 목록 새로고침
+      loadUserDesigns(user.id)
     } catch (error) {
       console.error('Cart error:', error)
       showToast('장바구니 추가 중 오류가 발생했습니다.')
@@ -219,23 +342,19 @@ export default function OrderPage() {
     try {
       // 먼저 장바구니에 모든 항목 추가
       for (const item of orderItems) {
-        // Upload design file
-        let designUrl = null
-        const fileExt = item.file.name.split('.').pop()
-        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('designs')
-          .upload(fileName, item.file)
+        let designUrl = item.designUrl
+        let designId = item.designId
 
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('designs')
-            .getPublicUrl(fileName)
-          designUrl = publicUrl
+        // 신규 디자인인 경우 업로드 및 저장
+        if (item.isNewMold && item.file) {
+          const result = await uploadAndSaveDesign(item.file, user.id)
+          if (result) {
+            designUrl = result.designUrl
+            designId = result.designId
+          }
         }
 
-        // Add to cart
+        // Add to cart (design_id, is_new_mold는 DB 스키마 업데이트 후 활성화)
         const { error } = await supabase.from('cart_items').insert({
           user_id: user.id,
           paint_type: item.paintType,
@@ -243,7 +362,9 @@ export default function OrderPage() {
           size: item.size,
           quantity: item.quantity,
           design_url: designUrl,
-          design_name: item.file.name,
+          design_name: item.designName,
+          // design_id: designId,        // TODO: DB 스키마 업데이트 후 활성화
+          // is_new_mold: item.isNewMold, // TODO: DB 스키마 업데이트 후 활성화
         })
 
         if (error) throw error
@@ -285,44 +406,189 @@ export default function OrderPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Options Column */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Upload Section */}
+              {/* Design Selection Section */}
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-11 h-11 bg-primary-100 rounded-xl flex items-center justify-center text-xl">🎨</div>
                   <div>
-                    <h2 className="font-bold text-lg">디자인 업로드</h2>
-                    <p className="text-gray-500 text-sm">디자인 파일을 업로드해주세요</p>
+                    <h2 className="font-bold text-lg">디자인 선택</h2>
+                    <p className="text-gray-500 text-sm">신규 디자인 또는 기존 디자인을 선택하세요</p>
                   </div>
                 </div>
 
-                <label 
-                  ref={uploadRef}
-                  className={`block border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
-                  uploadHighlight 
-                    ? 'border-red-500 bg-red-50 animate-pulse' 
-                    : 'border-gray-200 hover:border-primary-400 hover:bg-primary-50/50'
-                }`}>
-                  <input type="file" className="hidden" accept=".ai,application/postscript" onChange={handleFileChange} />
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 ${
+                {/* 디자인 모드 선택 */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <button
+                    onClick={() => {
+                      setDesignMode('new')
+                      setSelectedDesign(null)
+                    }}
+                    className={`p-4 rounded-xl border-2 transition-all text-left ${
+                      designMode === 'new'
+                        ? 'border-primary-500 bg-primary-50'
+                        : 'border-gray-200 hover:border-primary-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="text-2xl">📤</div>
+                      <div className="font-semibold">신규 디자인</div>
+                    </div>
+                    <p className="text-sm text-gray-500">새 파일 업로드</p>
+                    <p className="text-sm font-medium text-amber-600 mt-2">
+                      +₩{MOLD_FEE.toLocaleString()} 금형비
+                    </p>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      if (!user) {
+                        showToast('로그인 후 이용 가능합니다.', 'error')
+                        return
+                      }
+                      setDesignMode('existing')
+                      setDesignFile(null)
+                    }}
+                    disabled={!user}
+                    className={`p-4 rounded-xl border-2 transition-all text-left ${
+                      designMode === 'existing'
+                        ? 'border-primary-500 bg-primary-50'
+                        : 'border-gray-200 hover:border-primary-300'
+                    } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="text-2xl">📁</div>
+                      <div className="font-semibold">기존 디자인</div>
+                    </div>
+                    <p className="text-sm text-gray-500">이전 주문 재사용</p>
+                    <p className="text-sm font-medium text-green-600 mt-2">
+                      금형비 무료
+                    </p>
+                  </button>
+                </div>
+
+                {/* 신규 디자인 - 파일 업로드 */}
+                {designMode === 'new' && (
+                  <label 
+                    ref={uploadRef}
+                    className={`block border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
                     uploadHighlight 
-                      ? 'bg-red-500' 
-                      : 'bg-gradient-to-r from-primary-500 to-blue-400'
+                      ? 'border-red-500 bg-red-50 animate-pulse' 
+                      : 'border-gray-200 hover:border-primary-400 hover:bg-primary-50/50'
                   }`}>
-                    {uploadHighlight ? '⚠️' : '📤'}
+                    <input type="file" className="hidden" accept=".ai,application/postscript" onChange={handleFileChange} />
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 ${
+                      uploadHighlight 
+                        ? 'bg-red-500' 
+                        : 'bg-gradient-to-r from-primary-500 to-blue-400'
+                    }`}>
+                      {uploadHighlight ? '⚠️' : '📤'}
+                    </div>
+                    <p className={`font-semibold mb-2 ${uploadHighlight ? 'text-red-600' : ''}`}>
+                      {uploadHighlight ? '👆 여기를 클릭해서 파일을 업로드하세요!' : '디자인 파일을 드래그하거나 클릭하세요'}
+                    </p>
+                    <p className="text-gray-400 text-sm">AI 파일만 지원 (최대 50MB)</p>
+                    {designFile && (
+                      <div className="mt-4 space-y-2">
+                        <p className="text-primary-600 font-medium">✓ {designFile.name}</p>
+                        <p className="text-gray-500 text-xs">
+                          크기: {(designFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    )}
+                  </label>
+                )}
+
+                {/* 기존 디자인 - 디자인 목록 */}
+                {designMode === 'existing' && (
+                  <div className="space-y-3">
+                    {designsLoading ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <div className="animate-spin w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-3"></div>
+                        디자인 목록을 불러오는 중...
+                      </div>
+                    ) : userDesigns.length === 0 ? (
+                      <div className="text-center py-8 bg-gray-50 rounded-2xl">
+                        <div className="text-4xl mb-3">📭</div>
+                        <p className="text-gray-500 font-medium">저장된 디자인이 없습니다</p>
+                        <p className="text-gray-400 text-sm mt-1">
+                          신규 디자인으로 첫 주문을 진행해주세요
+                        </p>
+                        <button
+                          onClick={() => setDesignMode('new')}
+                          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors"
+                        >
+                          신규 디자인 업로드하기
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-500 mb-3">
+                          재사용할 디자인을 선택하세요 ({userDesigns.length}개)
+                        </p>
+                        <div className="max-h-64 overflow-y-auto space-y-2">
+                          {userDesigns.map((design) => (
+                            <button
+                              key={design.id}
+                              onClick={() => setSelectedDesign(design)}
+                              className={`w-full p-4 rounded-xl border-2 transition-all text-left flex items-center gap-4 ${
+                                selectedDesign?.id === design.id
+                                  ? 'border-primary-500 bg-primary-50'
+                                  : 'border-gray-200 hover:border-primary-300'
+                              }`}
+                            >
+                              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
+                                {design.preview_url ? (
+                                  <img src={design.preview_url} alt="" className="w-full h-full object-cover rounded-lg" />
+                                ) : (
+                                  '🎨'
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-gray-900 truncate">{design.design_name}</p>
+                                <p className="text-sm text-gray-500">
+                                  {new Date(design.created_at).toLocaleDateString('ko-KR')}
+                                </p>
+                                {design.memo && (
+                                  <p className="text-xs text-gray-400 truncate mt-1">{design.memo}</p>
+                                )}
+                              </div>
+                              {selectedDesign?.id === design.id && (
+                                <div className="w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center text-white text-sm">
+                                  ✓
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        {selectedDesign && (
+                          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                            <div className="flex items-center gap-2 text-green-700">
+                              <span className="text-lg">✓</span>
+                              <span className="font-medium">선택됨: {selectedDesign.design_name}</span>
+                            </div>
+                            <p className="text-sm text-green-600 mt-1">
+                              기존 금형을 사용하여 금형비가 부과되지 않습니다
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
-                  <p className={`font-semibold mb-2 ${uploadHighlight ? 'text-red-600' : ''}`}>
-                    {uploadHighlight ? '👆 여기를 클릭해서 파일을 업로드하세요!' : '디자인 파일을 드래그하거나 클릭하세요'}
-                  </p>
-                  <p className="text-gray-400 text-sm">AI 파일만 지원 (최대 50MB)</p>
-                  {designFile && (
-                    <div className="mt-4 space-y-2">
-                      <p className="text-primary-600 font-medium">✓ {designFile.name}</p>
-                      <p className="text-gray-500 text-xs">
-                        크기: {(designFile.size / 1024 / 1024).toFixed(2)} MB
+                )}
+
+                {/* 금형비 안내 */}
+                <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">💡</span>
+                    <div className="text-sm">
+                      <p className="font-medium text-amber-800">금형비 안내</p>
+                      <p className="text-amber-700 mt-1">
+                        새로운 디자인은 금형 제작이 필요하여 <strong>₩{MOLD_FEE.toLocaleString()}</strong>의 금형비가 부과됩니다.
+                        동일한 디자인으로 재주문 시에는 금형비가 부과되지 않습니다.
                       </p>
                     </div>
-                  )}
-                </label>
+                  </div>
+                </div>
               </div>
 
               {/* Paint Type */}
@@ -592,11 +858,24 @@ export default function OrderPage() {
                   <div className="space-y-4">
                     {orderItems.map((item, index) => {
                       const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
+                      const moldFee = item.isNewMold ? MOLD_FEE : 0
+                      const itemTotal = itemPrice.total + moldFee
                       return (
                         <div key={item.id} className="border border-gray-200 rounded-2xl p-4">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-900 truncate">{item.file.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-gray-900 truncate">{item.designName}</p>
+                                {item.isNewMold ? (
+                                  <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
+                                    신규금형
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                                    재사용
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-sm text-gray-500 mt-1">
                                 {getPaintTypeName(item.paintType)} / {getMetalColorName(item.metalColor)} / {item.size}mm
                               </p>
@@ -631,9 +910,16 @@ export default function OrderPage() {
                                 +
                               </button>
                             </div>
-                            <p className="font-bold text-lg text-gray-900">
-                              ₩{itemPrice.total.toLocaleString()}
-                            </p>
+                            <div className="text-right">
+                              <p className="font-bold text-lg text-gray-900">
+                                ₩{itemTotal.toLocaleString()}
+                              </p>
+                              {item.isNewMold && (
+                                <p className="text-xs text-amber-600">
+                                  (금형비 ₩{MOLD_FEE.toLocaleString()} 포함)
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )
@@ -657,13 +943,19 @@ export default function OrderPage() {
                     <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
                       {orderItems.map((item, index) => {
                         const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
+                        const moldFee = item.isNewMold ? MOLD_FEE : 0
                         return (
                           <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                             <div className="min-w-0 flex-1">
-                              <p className="font-medium text-sm truncate">{item.file.name}</p>
+                              <div className="flex items-center gap-1">
+                                <p className="font-medium text-sm truncate">{item.designName}</p>
+                                {item.isNewMold && (
+                                  <span className="text-xs text-amber-600">🔧</span>
+                                )}
+                              </div>
                               <p className="text-xs text-gray-500">{item.quantity}개</p>
                             </div>
-                            <p className="font-semibold text-sm ml-2">₩{itemPrice.total.toLocaleString()}</p>
+                            <p className="font-semibold text-sm ml-2">₩{(itemPrice.total + moldFee).toLocaleString()}</p>
                           </div>
                         )
                       })}
@@ -679,6 +971,12 @@ export default function OrderPage() {
                         <span>총 수량</span>
                         <span>{totalQuantity.toLocaleString()}개</span>
                       </div>
+                      {totalMoldFee > 0 && (
+                        <div className="flex justify-between text-sm text-amber-400 mb-3">
+                          <span>금형비 ({orderItems.filter(i => i.isNewMold).length}건)</span>
+                          <span>₩{totalMoldFee.toLocaleString()}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm text-gray-400 mb-3">
                         <span>배송비</span>
                         {calculateShippingFee(totalPrice) === 0 ? (
