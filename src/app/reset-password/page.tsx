@@ -80,7 +80,7 @@ export default function ResetPasswordPage() {
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center mb-8">
           <Image
-            src="/logo.png"
+            src="/logo.svg"
             alt="Hey Badge"
             width={160}
             height={50}

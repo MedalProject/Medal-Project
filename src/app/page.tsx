@@ -160,7 +160,7 @@ export default function Home() {
             <div>
               <div className="mb-4">
                 <Image
-                  src="/logo.png"
+                  src="/logo.svg"
                   alt="헤이뱃지"
                   width={120}
                   height={40}
