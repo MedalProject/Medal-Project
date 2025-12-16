@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { createClient, calculatePrice, priceTable, calculateShippingFee, FREE_SHIPPING_THRESHOLD, MOLD_FEE, UserDesign } from '@/lib/supabase'
+import { generateQuotePDF } from '@/lib/generateQuotePDF'
 
 const metalColors = [
   { id: 'gold', name: '금도금', class: 'metal-gold' },
@@ -266,6 +267,45 @@ export default function OrderPage() {
     } catch (error) {
       console.error('Design upload error:', error)
       return null
+    }
+  }
+
+  // 견적서 다운로드
+  const handleDownloadQuote = async () => {
+    if (orderItems.length === 0) {
+      showToast('견적서를 다운로드하려면 항목을 추가해주세요.', 'error')
+      return
+    }
+
+    showToast('견적서를 생성 중입니다...')
+
+    const quoteItems = orderItems.map((item) => {
+      const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
+      return {
+        name: '금속 뱃지',
+        spec: `${getPaintTypeName(item.paintType)} / ${getMetalColorName(item.metalColor)} / ${item.size}mm`,
+        quantity: item.quantity,
+        unitPrice: itemPrice.unitPrice,
+        amount: itemPrice.total,
+        isNewMold: item.isNewMold,
+      }
+    })
+
+    const shippingFee = calculateShippingFee(totalPrice - totalMoldFee)
+
+    try {
+      await generateQuotePDF({
+        items: quoteItems,
+        moldFee: totalMoldFee,
+        moldCount: orderItems.filter(i => i.isNewMold).length,
+        shippingFee,
+        totalAmount: totalPrice + shippingFee,
+      })
+
+      showToast('견적서가 다운로드되었습니다!')
+    } catch (error) {
+      console.error('견적서 생성 오류:', error)
+      showToast('견적서 생성 중 오류가 발생했습니다.', 'error')
     }
   }
 
@@ -1092,6 +1132,16 @@ export default function OrderPage() {
                     className="w-full py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold text-lg hover:border-primary-500 hover:text-primary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {orderItems.length === 0 ? '🛒 장바구니에 담기' : `🛒 ${orderItems.length}건 장바구니에 담기`}
+                  </button>
+
+                  {/* 견적서 다운로드 버튼 */}
+                  <button
+                    onClick={handleDownloadQuote}
+                    disabled={orderItems.length === 0}
+                    className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-medium text-sm hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <span>📄</span>
+                    견적서 다운로드 (PDF)
                   </button>
                 </div>
 
