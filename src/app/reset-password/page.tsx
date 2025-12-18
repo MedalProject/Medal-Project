@@ -42,8 +42,12 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         router.push('/login')
       }, 3000)
-    } catch (err: any) {
-      setError(err.message || '비밀번호 변경에 실패했습니다.')
+    } catch (err: unknown) {
+      // 에러 메시지 안전하게 추출
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : '비밀번호 변경에 실패했습니다.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

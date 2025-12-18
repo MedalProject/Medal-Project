@@ -154,6 +154,8 @@ export default function CheckoutPage() {
 
   // 주문 완료
   const handleSubmitOrder = async () => {
+    if (!user) return
+    
     if (!isFormValid()) {
       showToast('배송지 정보를 모두 입력해주세요.')
       return

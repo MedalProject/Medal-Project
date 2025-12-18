@@ -4,45 +4,22 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
-import { createClient, calculatePrice, priceTable, calculateShippingFee, FREE_SHIPPING_THRESHOLD, MOLD_FEE, UserDesign } from '@/lib/supabase'
+import { createClient, calculatePrice, calculateShippingFee, FREE_SHIPPING_THRESHOLD, MOLD_FEE, UserDesign } from '@/lib/supabase'
 import { generateQuotePDF } from '@/lib/generateQuotePDF'
+import type { User } from '@supabase/supabase-js'
 
-const metalColors = [
-  { id: 'gold', name: '금도금', class: 'metal-gold' },
-  { id: 'silver', name: '은도금', class: 'metal-silver' },
-]
-
-const sizes = [
-  { size: 30, label: '30×30mm 이하', addon: 0 },
-  { size: 40, label: '40×40mm 이하', addon: 600 },
-  { size: 50, label: '50×50mm 이하', addon: 900 },
-  { size: 60, label: '60×60mm 이하', addon: 1300 },
-  { size: 70, label: '70×70mm 이하', addon: 1600 },
-  { size: 80, label: '80×80mm 이하', addon: 2100 },
-  { size: 90, label: '90×90mm 이하', addon: 2600 },
-  { size: 100, label: '100×100mm 이하', addon: 3000 },
-]
-
-// 주문 항목 타입
-type OrderItem = {
-  id: string
-  file: File | null          // 신규 디자인일 때만 사용
-  designId: string | null    // 기존 디자인 재사용 시
-  designUrl: string | null   // 기존 디자인 URL
-  designName: string         // 파일명 또는 디자인명
-  isNewMold: boolean         // 신규 금형 여부 (금형비 부과)
-  paintType: string
-  metalColor: string
-  size: number
-  quantity: number
-}
+// 타입 & 상수 import
+import type { OrderItem, DesignMode, ToastType } from '@/types/order'
+import { METAL_COLORS } from '@/constants/order'
+import { getMetalColorName, getPaintTypeName, generateOrderItemId } from '@/utils/order'
+import { PaintTypeSelector, MetalColorSelector, SizeSelector, QuantityInput, OrderItemList } from '@/components/order'
 
 export default function OrderPage() {
   const router = useRouter()
   const supabase = createClient()
   
   // State
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [paintType, setPaintType] = useState('normal')
   const [metalColor, setMetalColor] = useState('gold')
   const [size, setSize] = useState(30)
@@ -50,11 +27,11 @@ export default function OrderPage() {
   const [designFile, setDesignFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState('')
-  const [toastType, setToastType] = useState<'success' | 'error'>('success')
+  const [toastType, setToastType] = useState<ToastType>('success')
   const [uploadHighlight, setUploadHighlight] = useState(false)
   
   // 디자인 선택 관련 상태
-  const [designMode, setDesignMode] = useState<'new' | 'existing'>('new')
+  const [designMode, setDesignMode] = useState<DesignMode>('new')
   const [userDesigns, setUserDesigns] = useState<UserDesign[]>([])
   const [selectedDesign, setSelectedDesign] = useState<UserDesign | null>(null)
   const [designsLoading, setDesignsLoading] = useState(false)
@@ -143,7 +120,7 @@ export default function OrderPage() {
       }
 
       const newItem: OrderItem = {
-        id: Date.now().toString(),
+        id: generateOrderItemId(),
         file: designFile,
         designId: null,
         designUrl: null,
@@ -172,7 +149,7 @@ export default function OrderPage() {
       }
 
       const newItem: OrderItem = {
-        id: Date.now().toString(),
+        id: generateOrderItemId(),
         file: null,
         designId: selectedDesign.id,
         designUrl: selectedDesign.design_url,
@@ -420,14 +397,6 @@ export default function OrderPage() {
     }
   }
 
-  const getPaintTypeName = (type: string) => {
-    return priceTable[type as keyof typeof priceTable]?.name || type
-  }
-
-  const getMetalColorName = (color: string) => {
-    return metalColors.find(m => m.id === color)?.name || color
-  }
-
   return (
     <>
       <Header />
@@ -632,248 +601,23 @@ export default function OrderPage() {
               </div>
 
               {/* Paint Type */}
-              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-11 h-11 bg-amber-100 rounded-xl flex items-center justify-center text-xl">🎨</div>
-                  <div>
-                    <h2 className="font-bold text-lg">칠 종류</h2>
-                    <p className="text-gray-500 text-sm">원하는 칠 종류를 선택하세요</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  {Object.entries(priceTable).map(([key, value]) => (
-                    <button
-                      key={key}
-                      onClick={() => setPaintType(key)}
-                      className={`p-4 rounded-xl border-2 transition-all text-center ${
-                        paintType === key
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-primary-300'
-                      }`}
-                    >
-                      <div className="text-2xl mb-2">
-                        {key === 'normal' ? '🖌️' : key === 'epoxy' ? '💧' : '✨'}
-                      </div>
-                      <div className="font-semibold text-sm">{value.name}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {value.addon === 0 ? '+₩0' : `+₩${value.addon.toLocaleString()}`}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <PaintTypeSelector value={paintType} onChange={setPaintType} />
 
               {/* Metal Color */}
-              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-11 h-11 bg-green-100 rounded-xl flex items-center justify-center text-xl">🪙</div>
-                  <div>
-                    <h2 className="font-bold text-lg">도금 색상</h2>
-                    <p className="text-gray-500 text-sm">원하는 도금 색상을 선택하세요</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {metalColors.map((metal) => (
-                    <button
-                      key={metal.id}
-                      onClick={() => setMetalColor(metal.id)}
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                        metalColor === metal.id
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-primary-300'
-                      }`}
-                    >
-                      <div className={`w-10 h-10 rounded-full mx-auto mb-2 ${metal.class} shadow-md`} />
-                      <div className="text-sm font-medium">{metal.name}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <MetalColorSelector value={metalColor} onChange={setMetalColor} />
 
               {/* Size */}
-              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center text-xl">📐</div>
-                  <div>
-                    <h2 className="font-bold text-lg">크기 선택</h2>
-                    <p className="text-gray-500 text-sm">크기에 따라 추가요금이 발생합니다</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  {sizes.map((s) => (
-                    <button
-                      key={s.size}
-                      onClick={() => setSize(s.size)}
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                        size === s.size
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-primary-300'
-                      }`}
-                    >
-                      <div className="font-semibold text-sm mb-1">{s.label}</div>
-                      <div className="text-xs text-gray-500">
-                        {s.addon === 0 ? '기본' : `+₩${s.addon.toLocaleString()}`}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <SizeSelector value={size} onChange={setSize} />
 
               {/* Quantity */}
-              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center text-xl">📦</div>
-                  <div>
-                    <h2 className="font-bold text-lg">수량</h2>
-                    <p className="text-gray-500 text-sm">많이 주문할수록 더 많이 할인됩니다</p>
-                  </div>
-                </div>
-
-                {/* 수량 입력 */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, (quantity || 1) - 1))}
-                      className="w-12 h-12 text-xl hover:bg-primary-500 hover:text-white transition-colors"
-                    >
-                      −
-                    </button>
-                    <input
-                      type="number"
-                      value={quantity || ''}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        if (val === '') {
-                          setQuantity(0)
-                        } else {
-                          setQuantity(parseInt(val) || 0)
-                        }
-                      }}
-                      onBlur={() => {
-                        if (!quantity || quantity < 1) {
-                          setQuantity(1)
-                        }
-                      }}
-                      className="w-24 h-12 text-center font-bold text-lg bg-white border-0 no-spinner"
-                      min="1"
-                    />
-                    <button
-                      onClick={() => setQuantity((quantity || 0) + 1)}
-                      className="w-12 h-12 text-xl hover:bg-primary-500 hover:text-white transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <span className="text-gray-500 text-sm">개</span>
-                </div>
-
-                {/* 빠른 수량 추가 */}
-                <div className="flex flex-wrap items-center gap-2 mb-6">
-                  <span className="text-sm text-gray-500">빠른 추가:</span>
-                  {[10, 100, 1000].map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => setQuantity((quantity || 0) + q)}
-                      className="px-4 py-2 rounded-xl text-sm font-bold bg-primary-50 text-primary-600 hover:bg-primary-500 hover:text-white transition-all"
-                    >
-                      +{q.toLocaleString()}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setQuantity(1)}
-                    className="px-4 py-2 rounded-xl text-sm font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-all"
-                  >
-                    초기화
-                  </button>
-                </div>
-
-                {/* 수량별 할인 안내 */}
-                <div className="bg-gray-50 rounded-2xl p-4 mb-4">
-                  <p className="text-sm font-semibold text-gray-700 mb-3">수량별 할인 혜택 (자동 적용)</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {[
-                      { min: 1, max: 99, discount: 0, label: '1~99개' },
-                      { min: 100, max: 299, discount: 300, label: '100~299개' },
-                      { min: 300, max: 499, discount: 600, label: '300~499개' },
-                      { min: 500, max: 999, discount: 1200, label: '500~999개' },
-                      { min: 1000, max: 4999, discount: 1300, label: '1,000~4,999개' },
-                      { min: 5000, max: Infinity, discount: 1500, label: '5,000개 이상' },
-                    ].map((tier) => {
-                      const isActive = quantity >= tier.min && quantity <= tier.max
-                      return (
-                        <div
-                          key={tier.label}
-                          className={`p-3 rounded-xl text-center transition-all ${
-                            isActive
-                              ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
-                              : 'bg-white border border-gray-200'
-                          }`}
-                        >
-                          <div className={`text-xs mb-1 ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
-                            {tier.label}
-                          </div>
-                          <div className={`font-bold ${isActive ? 'text-white' : 'text-gray-900'}`}>
-                            {tier.discount === 0 ? '기본가' : `-₩${tier.discount.toLocaleString()}`}
-                          </div>
-                          {tier.discount > 0 && (
-                            <div className={`text-xs ${isActive ? 'text-white/80' : 'text-green-600'}`}>
-                              개당 할인
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* 현재 적용된 할인 */}
-                {price.discountPerUnit > 0 && (
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg">
-                      🎉
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-green-800">대량 할인 적용 중!</p>
-                      <p className="text-sm text-green-600">
-                        개당 <span className="font-bold">₩{price.discountPerUnit.toLocaleString()}</span> 할인 → 
-                        총 <span className="font-bold text-green-700">₩{price.discount.toLocaleString()}</span> 절약
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* 현재 선택 예상 가격 */}
-                <div className="bg-gray-900 rounded-2xl p-5 text-white">
-                  <div className="flex justify-between text-sm text-gray-400 mb-2">
-                    <span>{getPaintTypeName(paintType)} / {getMetalColorName(metalColor)} / {size}mm</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-400 mb-2">
-                    <span>단가</span>
-                    <span>₩{price.unitPrice.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-400 mb-2">
-                    <span>수량</span>
-                    <span>× {quantity || 1}개</span>
-                  </div>
-                  {price.discountPerUnit > 0 && (
-                    <div className="flex justify-between text-sm text-green-400 mb-2">
-                      <span>할인</span>
-                      <span>-₩{price.discount.toLocaleString()}</span>
-                    </div>
-                  )}
-                  <div className="border-t border-gray-700 pt-3 mt-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400">예상 금액</span>
-                      <span className="font-display text-2xl font-bold text-amber-400">
-                        ₩{price.total.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <QuantityInput
+                value={quantity}
+                onChange={setQuantity}
+                price={price}
+                paintTypeName={getPaintTypeName(paintType)}
+                metalColorName={getMetalColorName(metalColor)}
+                size={size}
+              />
 
               {/* 항목 추가 버튼 */}
               <button
@@ -885,88 +629,11 @@ export default function OrderPage() {
               </button>
 
               {/* 추가된 항목 목록 */}
-              {orderItems.length > 0 && (
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-11 h-11 bg-primary-100 rounded-xl flex items-center justify-center text-xl">🛒</div>
-                    <div>
-                      <h2 className="font-bold text-lg">주문 목록</h2>
-                      <p className="text-gray-500 text-sm">{orderItems.length}개의 디자인이 추가되었습니다</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    {orderItems.map((item, index) => {
-                      const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
-                      const moldFee = item.isNewMold ? MOLD_FEE : 0
-                      const itemTotal = itemPrice.total + moldFee
-                      return (
-                        <div key={item.id} className="border border-gray-200 rounded-2xl p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="font-semibold text-gray-900 truncate">{item.designName}</p>
-                                {item.isNewMold ? (
-                                  <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
-                                    신규금형
-                                  </span>
-                                ) : (
-                                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                                    재사용
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-sm text-gray-500 mt-1">
-                                {getPaintTypeName(item.paintType)} / {getMetalColorName(item.metalColor)} / {item.size}mm
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleRemoveItem(item.id)}
-                              className="text-gray-400 hover:text-red-500 text-xl transition-colors"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                          
-                          <div className="flex items-center justify-between mt-4">
-                            <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
-                              <button
-                                onClick={() => handleItemQuantityChange(item.id, item.quantity - 1)}
-                                className="w-10 h-10 text-lg hover:bg-primary-500 hover:text-white transition-colors"
-                              >
-                                −
-                              </button>
-                              <input
-                                type="number"
-                                value={item.quantity}
-                                onChange={(e) => handleItemQuantityChange(item.id, parseInt(e.target.value) || 1)}
-                                className="w-16 h-10 text-center font-bold bg-white border-0"
-                                min="1"
-                              />
-                              <button
-                                onClick={() => handleItemQuantityChange(item.id, item.quantity + 1)}
-                                className="w-10 h-10 text-lg hover:bg-primary-500 hover:text-white transition-colors"
-                              >
-                                +
-                              </button>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold text-lg text-gray-900">
-                                ₩{itemTotal.toLocaleString()}
-                              </p>
-                              {item.isNewMold && (
-                                <p className="text-xs text-amber-600">
-                                  (금형비 ₩{MOLD_FEE.toLocaleString()} 포함)
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+              <OrderItemList
+                items={orderItems}
+                onQuantityChange={handleItemQuantityChange}
+                onRemove={handleRemoveItem}
+              />
             </div>
 
             {/* Preview Column */}
@@ -1067,7 +734,7 @@ export default function OrderPage() {
                         </div>
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                          <div className={`w-32 h-32 rounded-full ${metalColors.find(m => m.id === metalColor)?.class} shadow-2xl flex items-center justify-center mb-4 badge-float`}>
+                          <div className={`w-32 h-32 rounded-full ${METAL_COLORS.find(m => m.id === metalColor)?.class} shadow-2xl flex items-center justify-center mb-4 badge-float`}>
                             <span className="text-amber-900 font-bold text-sm">DESIGN</span>
                           </div>
                           <p className="font-medium text-gray-600 mb-2">디자인 파일을 업로드해주세요</p>

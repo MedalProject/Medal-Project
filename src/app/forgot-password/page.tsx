@@ -25,8 +25,12 @@ export default function ForgotPasswordPage() {
       if (error) throw error
 
       setSuccess(true)
-    } catch (err: any) {
-      setError(err.message || '비밀번호 재설정 이메일 발송에 실패했습니다.')
+    } catch (err: unknown) {
+      // 에러 메시지 안전하게 추출
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : '비밀번호 재설정 이메일 발송에 실패했습니다.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

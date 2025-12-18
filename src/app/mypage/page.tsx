@@ -5,7 +5,32 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { createClient } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
+// 다음 우편번호 API 타입 정의
+interface DaumPostcodeData {
+  zonecode: string
+  address: string
+  addressType: string
+  bname: string
+  buildingName: string
+}
+
+interface DaumPostcode {
+  new (options: {
+    oncomplete: (data: DaumPostcodeData) => void
+  }): { open: () => void }
+}
+
+declare global {
+  interface Window {
+    daum?: {
+      Postcode: DaumPostcode
+    }
+  }
+}
+
+// 배송지 타입
 type Address = {
   id: string
   user_id: string
@@ -22,7 +47,7 @@ export default function MyPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'address' | 'withdraw'>('profile')
   const [toast, setToast] = useState('')
@@ -112,6 +137,8 @@ export default function MyPage() {
 
   // 프로필 저장
   const handleSaveProfile = async () => {
+    if (!user) return
+    
     setProfileLoading(true)
     try {
       const { error } = await supabase
@@ -153,18 +180,22 @@ export default function MyPage() {
 
       showToast('비밀번호가 변경되었습니다.')
       setPasswords({ current: '', new: '', confirm: '' })
-    } catch (error: any) {
-      showToast(error.message || '비밀번호 변경에 실패했습니다.', 'error')
+    } catch (error: unknown) {
+      // 에러 메시지 안전하게 추출
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : '비밀번호 변경에 실패했습니다.'
+      showToast(errorMessage, 'error')
     } finally {
       setPasswordLoading(false)
     }
   }
 
-  // 주소 검색
+  // 주소 검색 (다음 우편번호 API)
   const handleAddressSearch = () => {
-    if (typeof window !== 'undefined' && (window as any).daum) {
-      new (window as any).daum.Postcode({
-        oncomplete: function(data: any) {
+    if (typeof window !== 'undefined' && window.daum) {
+      new window.daum.Postcode({
+        oncomplete: function(data: DaumPostcodeData) {
           setAddressForm(prev => ({
             ...prev,
             zonecode: data.zonecode,
@@ -177,6 +208,8 @@ export default function MyPage() {
 
   // 배송지 저장
   const handleSaveAddress = async () => {
+    if (!user) return
+    
     if (!addressForm.name || !addressForm.phone || !addressForm.address) {
       showToast('필수 항목을 입력해주세요.', 'error')
       return
@@ -288,6 +321,8 @@ export default function MyPage() {
 
   // 회원 탈퇴
   const handleWithdraw = async () => {
+    if (!user) return
+    
     if (withdrawConfirm !== '회원탈퇴') {
       showToast('"회원탈퇴"를 정확히 입력해주세요.', 'error')
       return
@@ -349,7 +384,7 @@ export default function MyPage() {
                   ].map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => setActiveTab(item.id as any)}
+                      onClick={() => setActiveTab(item.id as typeof activeTab)}
                       className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-colors ${
                         activeTab === item.id
                           ? 'bg-primary-50 text-primary-600 font-medium'
