@@ -5,12 +5,38 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { createClient, calculatePrice, priceTable, calculateShippingFee, FREE_SHIPPING_THRESHOLD } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
+// 도금 색상 옵션
 const metalColors = [
   { id: 'gold', name: '금도금' },
   { id: 'silver', name: '은도금' },
 ]
 
+// 다음 우편번호 API 타입 정의
+interface DaumPostcodeData {
+  zonecode: string
+  address: string
+  addressType: string
+  bname: string
+  buildingName: string
+}
+
+interface DaumPostcode {
+  new (options: {
+    oncomplete: (data: DaumPostcodeData) => void
+  }): { open: () => void }
+}
+
+declare global {
+  interface Window {
+    daum?: {
+      Postcode: DaumPostcode
+    }
+  }
+}
+
+// 장바구니 아이템 타입
 type CheckoutItem = {
   id: string
   paint_type: string
@@ -25,7 +51,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const supabase = createClient()
   
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [items, setItems] = useState<CheckoutItem[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -101,9 +127,9 @@ export default function CheckoutPage() {
 
   // 주소 검색 (다음 우편번호 API)
   const handleAddressSearch = () => {
-    if (typeof window !== 'undefined' && (window as any).daum) {
-      new (window as any).daum.Postcode({
-        oncomplete: function(data: any) {
+    if (typeof window !== 'undefined' && window.daum) {
+      new window.daum.Postcode({
+        oncomplete: function(data: DaumPostcodeData) {
           setShippingInfo(prev => ({
             ...prev,
             zonecode: data.zonecode,
