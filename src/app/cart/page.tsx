@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { createClient, calculatePrice, priceTable, calculateShippingFee, FREE_SHIPPING_THRESHOLD } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 const metalColors = [
   { id: 'gold', name: '금도금' },
@@ -27,7 +28,7 @@ export default function CartPage() {
   const router = useRouter()
   const supabase = createClient()
   
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
   const [ordering, setOrdering] = useState(false)

@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { createClient, Order, statusLabels, statusColors, getPaintTypeName } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 export default function DashboardPage() {
   const router = useRouter()
   const supabase = createClient()
   
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
