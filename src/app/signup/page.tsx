@@ -183,7 +183,7 @@ export default function SignupPage() {
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center mb-8">
           <Image
-            src="/logo.svg"
+            src="/logo.png"
             alt="Hey Badge"
             width={160}
             height={50}

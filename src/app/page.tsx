@@ -135,204 +135,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Official Partners Section */}
-      <section className="py-16 sm:py-24 px-4 bg-gradient-to-b from-gray-900 to-gray-800 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl" />
-        
-        <div className="max-w-7xl mx-auto relative">
-          <div className="text-center mb-12 sm:mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 rounded-full text-amber-400 text-sm font-medium mb-6">
-              <span>🏆</span>
-              <span>OFFICIAL PARTNERSHIP</span>
-            </div>
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-4">
-              글로벌 브랜드가 선택했습니다
-            </h2>
-            <p className="text-gray-400 text-lg">
-              세계적인 기업들의 공식 기념 뱃지를 제작했습니다
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* 파리 올림픽 뱃지 */}
-            <div className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-700 hover:border-amber-500/50 transition-all duration-300">
-              <div className="absolute top-4 right-4">
-                <span className="px-3 py-1 bg-amber-500 text-gray-900 text-xs font-bold rounded-full">
-                  OFFICIAL
-                </span>
-              </div>
-              
-              <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-gray-700">
-                <Image
-                  src="/reveiw_samsung01.jpg"
-                  alt="2024 파리 올림픽 삼성 공식 뱃지"
-                  width={400}
-                  height={400}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🇫🇷</span>
-                  <span className="text-amber-400 font-semibold">Paris 2024</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white">
-                  2024 파리 올림픽<br />
-                  삼성전자 공식 기념 뱃지
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  SAMSUNG × Olympic Games Paris 2024
-                </p>
-              </div>
-            </div>
-
-            {/* 평창 유스 올림픽 뱃지 */}
-            <div className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-700 hover:border-amber-500/50 transition-all duration-300">
-              <div className="absolute top-4 right-4">
-                <span className="px-3 py-1 bg-amber-500 text-gray-900 text-xs font-bold rounded-full">
-                  OFFICIAL
-                </span>
-              </div>
-              
-              <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-gray-700">
-                <Image
-                  src="/reveiw_samsung02.jpg"
-                  alt="2024 평창 유스 올림픽 삼성 공식 뱃지"
-                  width={400}
-                  height={400}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🇰🇷</span>
-                  <span className="text-amber-400 font-semibold">Gangwon 2024</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white">
-                  2024 강원 동계 유스 올림픽<br />
-                  삼성전자 공식 기념 뱃지
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  SAMSUNG × Winter Youth Olympic Games 2024
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 신뢰 배지 */}
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-6 sm:gap-10">
-            <div className="text-center">
-              <p className="text-3xl sm:text-4xl font-bold text-white mb-1">500+</p>
-              <p className="text-gray-500 text-sm">기업 고객</p>
-            </div>
-            <div className="w-px h-12 bg-gray-700 hidden sm:block" />
-            <div className="text-center">
-              <p className="text-3xl sm:text-4xl font-bold text-white mb-1">50,000+</p>
-              <p className="text-gray-500 text-sm">누적 제작 수량</p>
-            </div>
-            <div className="w-px h-12 bg-gray-700 hidden sm:block" />
-            <div className="text-center">
-              <p className="text-3xl sm:text-4xl font-bold text-white mb-1">99%</p>
-              <p className="text-gray-500 text-sm">고객 만족도</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Reviews Section - 무한 슬라이드 */}
-      <section className="py-16 sm:py-24 bg-gray-50 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 mb-12">
-          <div className="text-center">
-            <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
-              고객님들의 생생한 후기
-            </h2>
-            <p className="text-gray-600 text-lg">
-              실제 주문하신 분들의 이야기를 들어보세요
-            </p>
-          </div>
-        </div>
-
-        {/* 무한 슬라이드 - 첫 번째 줄 (우→좌) */}
-        <div className="relative mb-6">
-          <div className="flex animate-scroll-left">
-            {[...Array(2)].map((_, setIndex) => (
-              <div key={setIndex} className="flex gap-6 pr-6">
-                {[
-                  { name: '김**', company: '스타트업 대표', rating: 5, text: '직원들 선물용으로 주문했는데 퀄리티가 정말 좋아요! 재주문 예정입니다.', badge: '금도금 30mm' },
-                  { name: '이**', company: '마케팅 담당자', rating: 5, text: '행사용 뱃지 500개 주문했는데 배송도 빠르고 품질도 만족스러워요.', badge: '에폭시 40mm' },
-                  { name: '박**', company: '동아리 회장', rating: 5, text: '동아리 뱃지 제작했어요. 가격도 합리적이고 결과물이 예뻐서 회원들 반응이 좋아요!', badge: '은도금 30mm' },
-                  { name: '최**', company: '기업 HR팀', rating: 5, text: '신입사원 웰컴키트에 들어갈 뱃지로 주문했습니다. 디테일이 살아있어요.', badge: '금도금 50mm' },
-                  { name: '정**', company: '팬클럽 운영자', rating: 5, text: '팬클럽 공식 뱃지로 제작했는데 회원들이 너무 좋아해요! 추가 주문 진행 중입니다.', badge: '에폭시 30mm' },
-                ].map((review, i) => (
-                  <div
-                    key={`${setIndex}-${i}`}
-                    className="flex-shrink-0 w-80 bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-shadow"
-                  >
-                    <div className="flex items-center gap-1 mb-3">
-                      {[...Array(review.rating)].map((_, j) => (
-                        <span key={j} className="text-amber-400">⭐</span>
-                      ))}
-                    </div>
-                    <p className="text-gray-700 mb-4 leading-relaxed">"{review.text}"</p>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-gray-900">{review.name}</p>
-                        <p className="text-sm text-gray-500">{review.company}</p>
-                      </div>
-                      <span className="px-3 py-1 bg-primary-50 text-primary-600 text-xs font-medium rounded-full">
-                        {review.badge}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 무한 슬라이드 - 두 번째 줄 (좌→우) */}
-        <div className="relative">
-          <div className="flex animate-scroll-right">
-            {[...Array(2)].map((_, setIndex) => (
-              <div key={setIndex} className="flex gap-6 pr-6">
-                {[
-                  { name: '강**', company: '학교 선생님', rating: 5, text: '졸업 기념 뱃지로 주문했어요. 학생들이 정말 좋아합니다!', badge: '금도금 40mm' },
-                  { name: '윤**', company: '카페 사장님', rating: 5, text: '직원 명찰 겸 뱃지로 사용 중이에요. 고급스러워서 손님들도 좋아해요.', badge: '은도금 30mm' },
-                  { name: '송**', company: '게임 개발사', rating: 5, text: '게임 출시 기념 굿즈로 제작했는데 유저들 반응이 폭발적이에요!', badge: '에폭시 50mm' },
-                  { name: '한**', company: '비영리단체', rating: 5, text: '봉사자 감사 뱃지로 제작했습니다. 의미있는 선물이 되었어요.', badge: '금도금 30mm' },
-                  { name: '오**', company: '이벤트 기획사', rating: 5, text: '대규모 행사 기념품으로 1000개 주문했는데 납기도 잘 맞춰주셨어요.', badge: '에폭시 40mm' },
-                ].map((review, i) => (
-                  <div
-                    key={`${setIndex}-${i}`}
-                    className="flex-shrink-0 w-80 bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-shadow"
-                  >
-                    <div className="flex items-center gap-1 mb-3">
-                      {[...Array(review.rating)].map((_, j) => (
-                        <span key={j} className="text-amber-400">⭐</span>
-                      ))}
-                    </div>
-                    <p className="text-gray-700 mb-4 leading-relaxed">"{review.text}"</p>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-gray-900">{review.name}</p>
-                        <p className="text-sm text-gray-500">{review.company}</p>
-                      </div>
-                      <span className="px-3 py-1 bg-primary-50 text-primary-600 text-xs font-medium rounded-full">
-                        {review.badge}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-16 sm:py-24 px-4 bg-gradient-to-br from-primary-600 to-blue-600">
         <div className="max-w-4xl mx-auto text-center">
@@ -358,7 +160,7 @@ export default function Home() {
             <div>
               <div className="mb-4">
                 <Image
-                  src="/logo.svg"
+                  src="/logo.png"
                   alt="헤이뱃지"
                   width={120}
                   height={40}
@@ -378,7 +180,7 @@ export default function Home() {
             
             <div className="text-sm text-gray-400 space-y-2">
               <p>이메일: hello.heybadge@gmail.com</p>
-              <p>전화: 010-6678-3343</p>
+              <p>전화: 0502-1910-3343</p>
               <p>평일 09:00 - 18:00</p>
             </div>
           </div>

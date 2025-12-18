@@ -74,21 +74,6 @@ export type ReferenceItem = {
   created_at: string
 }
 
-// 사용자 디자인 (금형 재사용을 위한 저장된 디자인)
-export type UserDesign = {
-  id: string
-  user_id: string
-  design_url: string
-  design_name: string
-  memo: string | null
-  preview_url: string | null
-  mold_completed: boolean
-  created_at: string
-}
-
-// 금형비
-export const MOLD_FEE = 90000
-
 // 가격 계산 유틸리티 - 칠 종류
 export const priceTable = {
   'normal': { base: 3500, addon: 0, name: '일반칠' },

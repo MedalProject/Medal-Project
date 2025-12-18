@@ -151,7 +151,7 @@ export default function RefundPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">전화</p>
-                    <p className="font-semibold text-gray-900">010-6678-3343</p>
+                    <p className="font-semibold text-gray-900">0502-1910-3343</p>
                   </div>
                   <div className="sm:col-span-2">
                     <p className="text-sm text-gray-500 mb-1">운영시간</p>
