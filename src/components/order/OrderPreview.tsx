@@ -43,7 +43,9 @@ export default function OrderPreview({
   handleAddToCart,
   handleDownloadQuote,
 }: OrderPreviewProps) {
-  const shippingFee = calculateShippingFee(totalPrice)
+  // 배송비 계산은 금형비 제외한 순수 상품가 기준
+  const productPrice = totalPrice - totalMoldFee
+  const shippingFee = calculateShippingFee(productPrice)
 
   return (
     <div className="lg:col-span-1">
@@ -101,9 +103,9 @@ export default function OrderPreview({
                   <span>₩{shippingFee.toLocaleString()}</span>
                 )}
               </div>
-              {totalPrice > 0 && totalPrice < FREE_SHIPPING_THRESHOLD && (
+              {productPrice > 0 && productPrice < FREE_SHIPPING_THRESHOLD && (
                 <p className="text-xs text-blue-400 mb-3">
-                  💡 ₩{(FREE_SHIPPING_THRESHOLD - totalPrice).toLocaleString()} 더 담으면 무료배송!
+                  💡 ₩{(FREE_SHIPPING_THRESHOLD - productPrice).toLocaleString()} 더 담으면 무료배송!
                 </p>
               )}
               <div className="border-t border-gray-700 pt-4 mt-4">
