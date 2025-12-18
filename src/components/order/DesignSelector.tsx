@@ -17,7 +17,7 @@ interface DesignSelectorProps {
   designsLoading: boolean
   showToast: (message: string, type?: ToastType) => void
   uploadHighlight: boolean
-  uploadRef: RefObject<HTMLLabelElement | null>
+  uploadRef: RefObject<HTMLLabelElement>
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
