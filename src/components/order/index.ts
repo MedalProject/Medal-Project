@@ -11,4 +11,6 @@ export { default as SizeSelector } from './SizeSelector'
 export { default as QuantityInput } from './QuantityInput'
 export { default as OrderItemCard } from './OrderItemCard'
 export { default as OrderItemList } from './OrderItemList'
+export { default as DesignSelector } from './DesignSelector'
+export { default as OrderPreview } from './OrderPreview'
 

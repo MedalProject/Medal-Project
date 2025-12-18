@@ -1,0 +1,240 @@
+'use client'
+
+import Link from 'next/link'
+import { calculatePrice, calculateShippingFee, FREE_SHIPPING_THRESHOLD, MOLD_FEE } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
+import type { OrderItem } from '@/types/order'
+import { METAL_COLORS } from '@/constants/order'
+
+interface OrderPreviewProps {
+  orderItems: OrderItem[]
+  totalPrice: number
+  totalMoldFee: number
+  totalQuantity: number
+  price: {
+    unitPrice: number
+    discount: number
+    total: number
+    discountPerUnit: number
+    sizeAddonPrice: number
+  }
+  quantity: number
+  designFile: File | null
+  metalColor: string
+  user: User | null
+  loading: boolean
+  handleOrder: () => void
+  handleAddToCart: () => void
+  handleDownloadQuote: () => void
+}
+
+export default function OrderPreview({
+  orderItems,
+  totalPrice,
+  totalMoldFee,
+  totalQuantity,
+  price,
+  quantity,
+  designFile,
+  metalColor,
+  user,
+  loading,
+  handleOrder,
+  handleAddToCart,
+  handleDownloadQuote,
+}: OrderPreviewProps) {
+  const shippingFee = calculateShippingFee(totalPrice)
+
+  return (
+    <div className="lg:col-span-1">
+      <div className="bg-white rounded-3xl p-6 shadow-sm sticky top-24">
+        <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
+          <span className="text-primary-500">●</span>
+          {orderItems.length > 0 ? '주문 요약' : '실시간 미리보기'}
+        </h3>
+
+        {orderItems.length > 0 ? (
+          // 주문 요약 보기
+          <>
+            <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
+              {orderItems.map((item) => {
+                const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
+                const moldFee = item.isNewMold ? MOLD_FEE : 0
+                return (
+                  <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1">
+                        <p className="font-medium text-sm truncate">{item.designName}</p>
+                        {item.isNewMold && (
+                          <span className="text-xs text-amber-600">🔧</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">{item.quantity}개</p>
+                    </div>
+                    <p className="font-semibold text-sm ml-2">₩{(itemPrice.total + moldFee).toLocaleString()}</p>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* 총 금액 */}
+            <div className="bg-gray-900 rounded-2xl p-6 text-white">
+              <div className="flex justify-between text-sm text-gray-400 mb-3">
+                <span>총 디자인</span>
+                <span>{orderItems.length}개</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-400 mb-3">
+                <span>총 수량</span>
+                <span>{totalQuantity.toLocaleString()}개</span>
+              </div>
+              {totalMoldFee > 0 && (
+                <div className="flex justify-between text-sm text-amber-400 mb-3">
+                  <span>금형비 ({orderItems.filter(i => i.isNewMold).length}건)</span>
+                  <span>₩{totalMoldFee.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm text-gray-400 mb-3">
+                <span>배송비</span>
+                {shippingFee === 0 ? (
+                  <span className="text-green-400">무료</span>
+                ) : (
+                  <span>₩{shippingFee.toLocaleString()}</span>
+                )}
+              </div>
+              {totalPrice > 0 && totalPrice < FREE_SHIPPING_THRESHOLD && (
+                <p className="text-xs text-blue-400 mb-3">
+                  💡 ₩{(FREE_SHIPPING_THRESHOLD - totalPrice).toLocaleString()} 더 담으면 무료배송!
+                </p>
+              )}
+              <div className="border-t border-gray-700 pt-4 mt-4">
+                <div className="flex justify-between items-end">
+                  <span className="text-gray-400">총 결제 금액</span>
+                  <span className="font-display text-3xl font-bold text-amber-400">
+                    ₩{(totalPrice + shippingFee).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          // 미리보기 (기존)
+          <>
+            <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10" style={{
+                backgroundImage: 'linear-gradient(90deg, transparent 49.5%, #000 49.5%, #000 50.5%, transparent 50.5%), linear-gradient(0deg, transparent 49.5%, #000 49.5%, #000 50.5%, transparent 50.5%)',
+                backgroundSize: '20px 20px'
+              }} />
+              
+              {designFile ? (
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                  <p className="font-bold text-xl text-gray-800 mb-3">
+                    {designFile.name.toLowerCase().endsWith('.pdf') ? 'PDF 파일' :
+                     designFile.name.toLowerCase().endsWith('.ai') ? 'Illustrator 파일' :
+                     'Photoshop 파일'}
+                  </p>
+                  <p className="text-base text-gray-700 mb-2 truncate max-w-full px-4">{designFile.name}</p>
+                  <p className="text-sm text-gray-500 mb-6">
+                    {(designFile.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                  <div className="px-5 py-3 bg-green-100 text-green-700 rounded-xl text-base font-medium flex items-center gap-2">
+                    <span className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✓</span>
+                    파일 업로드 완료
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                  <div className={`w-32 h-32 rounded-full ${METAL_COLORS.find(m => m.id === metalColor)?.class} shadow-2xl flex items-center justify-center mb-4 badge-float`}>
+                    <span className="text-amber-900 font-bold text-sm">DESIGN</span>
+                  </div>
+                  <p className="font-medium text-gray-600 mb-2">디자인 파일을 업로드해주세요</p>
+                  <p className="text-xs text-gray-400">AI 파일만 지원</p>
+                </div>
+              )}
+            </div>
+
+            {/* 가격 표시 */}
+            <div className="bg-gray-900 rounded-2xl p-6 text-white">
+              <div className="flex justify-between text-sm text-gray-400 mb-3">
+                <span>단가 (크기 추가요금 포함)</span>
+                <span>₩{price.unitPrice.toLocaleString()}</span>
+              </div>
+              {price.sizeAddonPrice > 0 && (
+                <div className="flex justify-between text-sm text-gray-500 mb-3 text-xs">
+                  <span className="pl-2">└ 크기 추가요금</span>
+                  <span>+₩{price.sizeAddonPrice.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm text-gray-400 mb-3">
+                <span>수량</span>
+                <span>× {quantity}개</span>
+              </div>
+              {price.discountPerUnit > 0 && (
+                <div className="flex justify-between text-sm text-green-400 mb-3">
+                  <span>대량 할인 (개당 -₩{price.discountPerUnit.toLocaleString()})</span>
+                  <span>-₩{price.discount.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="border-t border-gray-700 pt-4 mt-4">
+                <div className="flex justify-between items-end">
+                  <span className="text-gray-400">예상 금액</span>
+                  <span className="font-display text-3xl font-bold text-amber-400">
+                    ₩{price.total.toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-right text-xs text-gray-500 mt-2">
+                  개당 ₩{quantity > 0 ? Math.round(price.total / quantity).toLocaleString() : 0}
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* CTA 버튼 */}
+        <div className="mt-6 space-y-3">
+          <button
+            onClick={handleOrder}
+            disabled={loading || orderItems.length === 0}
+            className="w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? '처리 중...' : 
+             !user ? '로그인하고 주문하기' : 
+             orderItems.length === 0 ? '항목을 추가해주세요' :
+             `${orderItems.length}건 바로 주문하기`}
+          </button>
+          
+          <button
+            onClick={handleAddToCart}
+            disabled={loading || orderItems.length === 0}
+            className="w-full py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold text-lg hover:border-primary-500 hover:text-primary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {orderItems.length === 0 ? '🛒 장바구니에 담기' : `🛒 ${orderItems.length}건 장바구니에 담기`}
+          </button>
+
+          {/* 견적서 다운로드 버튼 */}
+          <button
+            onClick={handleDownloadQuote}
+            disabled={orderItems.length === 0}
+            className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-medium text-sm hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <span>📄</span>
+            견적서 다운로드 (PDF)
+          </button>
+        </div>
+
+        <p className="text-center text-sm text-gray-500 mt-4">
+          🚀 예상 발송일: 20일 이내
+        </p>
+
+        <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+          <Link 
+            href="/refund" 
+            className="text-sm text-gray-400 hover:text-primary-500 transition-colors"
+          >
+            환불규정 확인하기 →
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
