@@ -96,6 +96,7 @@ export default function CartPage() {
 
   // Clear cart
   const handleClearCart = async () => {
+    if (!user) return
     if (!confirm('장바구니를 비우시겠습니까?')) return
     
     const { error } = await supabase
