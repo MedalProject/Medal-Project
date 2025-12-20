@@ -16,6 +16,8 @@ function AuthCallbackContent() {
   useEffect(() => {
     const run = async () => {
       const code = searchParams.get('code')
+      const next = searchParams.get('next') // 리디렉션 대상
+      const type = searchParams.get('type') // recovery, signup 등
 
       if (!code) {
         router.replace('/login?error=missing_code')
@@ -32,7 +34,20 @@ function AuthCallbackContent() {
       }
 
       setMessage('로그인 완료! 이동 중...')
-      router.replace('/dashboard')
+      
+      // 비밀번호 재설정인 경우
+      if (type === 'recovery' || next === '/reset-password') {
+        router.replace('/reset-password')
+      } 
+      // 일반 로그인
+      else if (next) {
+        router.replace(next)
+      } 
+      // 기본 대시보드
+      else {
+        router.replace('/dashboard')
+      }
+      
       router.refresh()
     }
 

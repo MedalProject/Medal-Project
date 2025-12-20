@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -12,8 +12,35 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [isValidSession, setIsValidSession] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+
+  // 페이지 로드 시 세션 확인
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        // 현재 세션 확인
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError || !session) {
+          setError('세션이 만료되었거나 유효하지 않습니다. 비밀번호 찾기를 다시 시도해주세요.')
+          setCheckingSession(false)
+          return
+        }
+
+        setIsValidSession(true)
+      } catch (err) {
+        console.error('Session check error:', err)
+        setError('세션 확인 중 오류가 발생했습니다.')
+      } finally {
+        setCheckingSession(false)
+      }
+    }
+
+    checkSession()
+  }, [supabase])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,6 +78,54 @@ export default function ResetPasswordPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // 세션 확인 중 로딩 화면
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
+            <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-600 font-medium">세션 확인 중...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // 세션이 유효하지 않은 경우
+  if (!isValidSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+              ❌
+            </div>
+            <h1 className="text-2xl font-bold mb-4">세션이 만료되었습니다</h1>
+            <p className="text-gray-500 mb-6">
+              {error || '비밀번호 재설정 링크가 만료되었거나 유효하지 않습니다.'}
+              <br />비밀번호 찾기를 다시 시도해주세요.
+            </p>
+            <div className="space-y-3">
+              <Link
+                href="/forgot-password"
+                className="block w-full px-6 py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors"
+              >
+                비밀번호 찾기
+              </Link>
+              <Link
+                href="/login"
+                className="block w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+              >
+                로그인 페이지로
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (success) {
