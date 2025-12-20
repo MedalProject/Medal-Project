@@ -1,63 +1,79 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [isValidSession, setIsValidSession] = useState(false)
-  const [checkingSession, setCheckingSession] = useState(true)
+  const [verifying, setVerifying] = useState(true)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
 
-  // 페이지 로드 시 세션 확인 (onAuthStateChange 사용)
+  // 페이지 로드 시 토큰 검증 (클라이언트에서 직접 verifyOtp 호출)
   useEffect(() => {
-    // Supabase가 URL hash에서 토큰을 자동으로 처리하도록 대기
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth event:', event, session)
-        
-        if (event === 'PASSWORD_RECOVERY') {
-          // 비밀번호 재설정 이벤트 감지됨
-          setIsValidSession(true)
-          setCheckingSession(false)
-        } else if (event === 'SIGNED_IN' && session) {
-          // 세션이 설정됨
-          setIsValidSession(true)
-          setCheckingSession(false)
-        } else if (event === 'INITIAL_SESSION') {
-          // 초기 세션 확인
-          if (session) {
-            setIsValidSession(true)
-          } else {
-            // 세션이 없으면 URL hash 확인 후 잠시 대기
-            setTimeout(async () => {
-              const { data: { session: retrySession } } = await supabase.auth.getSession()
-              if (retrySession) {
-                setIsValidSession(true)
-              } else {
-                setError('세션이 만료되었거나 유효하지 않습니다. 비밀번호 찾기를 다시 시도해주세요.')
-              }
-              setCheckingSession(false)
-            }, 500)
+    const verifyToken = async () => {
+      // URL에서 token_hash와 type 읽기
+      const tokenHash = searchParams.get('token_hash')
+      const type = searchParams.get('type')
+      const urlError = searchParams.get('error')
+
+      // URL에 에러가 있으면 표시
+      if (urlError) {
+        setError(decodeURIComponent(urlError))
+        setVerifying(false)
+        return
+      }
+
+      // token_hash와 type이 있으면 클라이언트에서 verifyOtp 호출
+      if (tokenHash && type === 'recovery') {
+        try {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'recovery',
+          })
+
+          if (verifyError) {
+            console.error('Verify OTP error:', verifyError)
+            setError(verifyError.message || '토큰 검증에 실패했습니다.')
+            setVerifying(false)
             return
           }
-          setCheckingSession(false)
-        }
-      }
-    )
 
-    return () => {
-      subscription.unsubscribe()
+          // 성공! 세션이 클라이언트에 저장됨
+          setIsValidSession(true)
+          setVerifying(false)
+          
+          // URL에서 token_hash 제거 (보안 및 깔끔한 URL)
+          router.replace('/reset-password')
+        } catch (err) {
+          console.error('Token verification error:', err)
+          setError('토큰 검증 중 오류가 발생했습니다.')
+          setVerifying(false)
+        }
+        return
+      }
+
+      // token_hash가 없으면 기존 세션 확인
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setIsValidSession(true)
+      } else {
+        setError('세션이 만료되었거나 유효하지 않습니다. 비밀번호 찾기를 다시 시도해주세요.')
+      }
+      setVerifying(false)
     }
-  }, [supabase])
+
+    verifyToken()
+  }, [searchParams, supabase, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,7 +103,6 @@ export default function ResetPasswordPage() {
         router.push('/login')
       }, 3000)
     } catch (err: unknown) {
-      // 에러 메시지 안전하게 추출
       const errorMessage = err instanceof Error 
         ? err.message 
         : '비밀번호 변경에 실패했습니다.'
@@ -97,14 +112,14 @@ export default function ResetPasswordPage() {
     }
   }
 
-  // 세션 확인 중 로딩 화면
-  if (checkingSession) {
+  // 토큰 검증 중 로딩 화면
+  if (verifying) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
             <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-gray-600 font-medium">세션 확인 중...</p>
+            <p className="text-gray-600 font-medium">인증 확인 중...</p>
           </div>
         </div>
       </div>
@@ -120,7 +135,7 @@ export default function ResetPasswordPage() {
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
               ❌
             </div>
-            <h1 className="text-2xl font-bold mb-4">세션이 만료되었습니다</h1>
+            <h1 className="text-2xl font-bold mb-4">인증 실패</h1>
             <p className="text-gray-500 mb-6">
               {error || '비밀번호 재설정 링크가 만료되었거나 유효하지 않습니다.'}
               <br />비밀번호 찾기를 다시 시도해주세요.
@@ -242,3 +257,25 @@ export default function ResetPasswordPage() {
   )
 }
 
+// 로딩 UI (Suspense fallback)
+function LoadingUI() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
+          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">로딩 중...</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 메인 페이지 컴포넌트 - Suspense로 감싸서 export
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<LoadingUI />}>
+      <ResetPasswordContent />
+    </Suspense>
+  )
+}
