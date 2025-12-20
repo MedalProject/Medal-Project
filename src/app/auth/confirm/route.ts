@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
   redirectTo.searchParams.delete('type')
   redirectTo.searchParams.delete('next')
 
+  let errorMessage = 'missing_token_or_type'
+
   if (token_hash && type) {
     const cookieStore = await cookies()
     
@@ -45,10 +47,11 @@ export async function GET(request: NextRequest) {
     }
 
     console.error('OTP verification error:', error)
+    errorMessage = error.message || 'verification_failed'
   }
 
   // 에러 시 에러 메시지와 함께 reset-password로 리디렉션
   redirectTo.pathname = '/reset-password'
-  redirectTo.searchParams.set('error', 'invalid_token')
+  redirectTo.searchParams.set('error', encodeURIComponent(errorMessage))
   return NextResponse.redirect(redirectTo)
 }
