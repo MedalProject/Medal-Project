@@ -205,18 +205,6 @@ export default function SignupPage() {
 
           {/* 소셜 로그인 버튼들 */}
           <div className="space-y-3">
-            {/* 카카오 로그인 */}
-            <button
-              onClick={() => handleSocialLogin('kakao')}
-              disabled={socialLoading}
-              className="w-full py-4 bg-[#FEE500] rounded-xl font-bold text-[#3C1E1E] flex items-center justify-center gap-3 hover:bg-[#FDD800] transition-all disabled:opacity-50"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#3C1E1E">
-                <path d="M12 3C6.477 3 2 6.463 2 10.714c0 2.683 1.786 5.037 4.465 6.394-.197.728-.712 2.636-.815 3.043-.129.511.188.503.395.366.163-.107 2.593-1.756 3.645-2.47.752.112 1.528.167 2.31.167 5.523 0 10-3.463 10-7.5S17.523 3 12 3z"/>
-              </svg>
-              {socialLoading ? '연결 중...' : '카카오로 3초만에 가입하기'}
-            </button>
-
             {/* 구글 로그인 */}
             <button
               onClick={() => handleSocialLogin('google')}
