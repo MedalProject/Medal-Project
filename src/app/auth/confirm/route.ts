@@ -79,3 +79,4 @@ export async function GET(request: NextRequest) {
   redirectTo.searchParams.set('error', encodeURIComponent(errorMessage))
   return NextResponse.redirect(redirectTo)
 }
+

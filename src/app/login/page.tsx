@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [socialLoading, setSocialLoading] = useState<string | null>(null)
+  const [showForgotIdModal, setShowForgotIdModal] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -176,11 +177,21 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center space-y-2">
-            <p>
-              <Link href="/forgot-password" className="text-gray-500 hover:text-primary-600 text-sm">
-                비밀번호를 잊으셨나요?
-              </Link>
-            </p>
+            <div className="flex flex-col gap-2">
+              <p>
+                <Link href="/forgot-password" className="text-gray-500 hover:text-primary-600 text-sm">
+                  비밀번호를 잊으셨나요?
+                </Link>
+              </p>
+              <p>
+                <button
+                  onClick={() => setShowForgotIdModal(true)}
+                  className="text-gray-500 hover:text-primary-600 text-sm"
+                >
+                  아이디(이메일)를 잊으셨나요?
+                </button>
+              </p>
+            </div>
             <p className="text-gray-500 text-sm">
               아직 계정이 없으신가요?{' '}
               <Link href="/signup" className="text-primary-600 font-semibold hover:underline">
@@ -197,6 +208,66 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
+
+      {/* 아이디 찾기 안내 모달 */}
+      {showForgotIdModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowForgotIdModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">아이디(이메일) 찾기</h2>
+              <button
+                onClick={() => setShowForgotIdModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <p className="text-sm text-gray-700 mb-3">
+                  가입 방법에 따라 다른 방법으로 로그인하실 수 있습니다:
+                </p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-600 font-bold">•</span>
+                    <div>
+                      <p className="font-semibold text-gray-800">구글로 가입하셨다면</p>
+                      <p className="text-gray-600">"구글로 계속하기" 버튼을 눌러주세요.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-600 font-bold">•</span>
+                    <div>
+                      <p className="font-semibold text-gray-800">이메일로 가입하셨다면</p>
+                      <p className="text-gray-600">카카오톡 채널로 문의해주세요.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  window.open('https://pf.kakao.com/_JjxbQn/chat', '_blank')
+                  setShowForgotIdModal(false)
+                }}
+                className="w-full py-3 bg-[#FEE500] hover:bg-[#FDD800] text-[#3C1E1E] rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#3C1E1E">
+                  <path d="M12 3C6.477 3 2 6.463 2 10.714c0 2.683 1.786 5.037 4.465 6.394-.197.728-.712 2.636-.815 3.043-.129.511.188.503.395.366.163-.107 2.593-1.756 3.645-2.47.752.112 1.528.167 2.31.167 5.523 0 10-3.463 10-7.5S17.523 3 12 3z"/>
+                </svg>
+                카카오톡 채널로 문의하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
