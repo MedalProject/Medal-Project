@@ -148,10 +148,10 @@ export default function Home() {
               <span>OFFICIAL PARTNERSHIP</span>
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-4">
-              글로벌 브랜드가 선택했습니다
+              올림픽이 선택한 품질
             </h2>
             <p className="text-gray-400 text-lg">
-              세계적인 기업들의 공식 기념 뱃지를 제작했습니다
+              글로벌 공식 제작 경험으로, 당신의 브랜드도 '기념'이 되게 만듭니다.
             </p>
           </div>
 
