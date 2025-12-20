@@ -57,7 +57,8 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}`,
+          // OAuth 콜백에서 code → session 교환을 처리하기 위해 callback 라우트로 통일
+          redirectTo: `${window.location.origin}/auth/callback`,
           scopes: provider === 'kakao' ? 'account_email' : undefined
         }
       })

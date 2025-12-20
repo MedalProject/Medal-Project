@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import KakaoChat from '@/components/KakaoChat'
+import AuthCodeRedirect from '@/components/AuthCodeRedirect'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://hey-badge.vercel.app'),
@@ -58,6 +59,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="bg-gray-50 min-h-screen">
+        <AuthCodeRedirect />
         {children}
         <KakaoChat />
       </body>
