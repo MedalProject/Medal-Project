@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import './globals.css'
 import KakaoChat from '@/components/KakaoChat'
 import AuthCodeRedirect from '@/components/AuthCodeRedirect'
@@ -59,7 +60,10 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="bg-gray-50 min-h-screen">
-        <AuthCodeRedirect />
+        {/* useSearchParams() 사용으로 인해 Suspense 필수 */}
+        <Suspense fallback={null}>
+          <AuthCodeRedirect />
+        </Suspense>
         {children}
         <KakaoChat />
       </body>
