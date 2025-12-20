@@ -7,8 +7,8 @@ import AuthCodeRedirect from '@/components/AuthCodeRedirect'
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://hey-badge.vercel.app'),
   title: {
-    default: 'Hey Badge - 1개부터 나만의 뱃지 제작',
-    template: '%s | Hey Badge',
+    default: '헤이뱃지 - 1개부터 나만의 뱃지 제작',
+    template: '%s | 헤이뱃지',
   },
   description: '사진 한 장으로 나만의 뱃지를 만들어 보세요. 실시간 3D 미리보기, 투명한 가격, 20일 이내 발송',
   alternates: {
@@ -18,21 +18,21 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ko_KR',
     url: '/',
-    siteName: 'Hey Badge',
-    title: 'Hey Badge - 1개부터 나만의 뱃지 제작',
+    siteName: '헤이뱃지',
+    title: '헤이뱃지 - 1개부터 나만의 뱃지 제작',
     description: '사진 한 장으로 나만의 뱃지를 만들어 보세요. 실시간 3D 미리보기, 투명한 가격, 20일 이내 발송',
     images: [
       {
         url: '/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Hey Badge',
+        alt: '헤이뱃지',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hey Badge - 1개부터 나만의 뱃지 제작',
+    title: '헤이뱃지 - 1개부터 나만의 뱃지 제작',
     description: '사진 한 장으로 나만의 뱃지를 만들어 보세요. 실시간 3D 미리보기, 투명한 가격, 20일 이내 발송',
     images: ['/logo.png'],
   },
@@ -57,8 +57,23 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Google 검색 결과에 사이트 이름 표시를 위한 구조화된 데이터
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "헤이뱃지",
+    "alternateName": ["Hey Badge", "헤이 뱃지"],
+    "url": "https://hey-badge.vercel.app"
+  }
+
   return (
     <html lang="ko">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
+      </head>
       <body className="bg-gray-50 min-h-screen">
         {/* useSearchParams() 사용으로 인해 Suspense 필수 */}
         <Suspense fallback={null}>
