@@ -17,29 +17,46 @@ export default function ResetPasswordPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  // 페이지 로드 시 세션 확인
+  // 페이지 로드 시 세션 확인 (onAuthStateChange 사용)
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        // 현재 세션 확인
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    // Supabase가 URL hash에서 토큰을 자동으로 처리하도록 대기
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth event:', event, session)
         
-        if (sessionError || !session) {
-          setError('세션이 만료되었거나 유효하지 않습니다. 비밀번호 찾기를 다시 시도해주세요.')
+        if (event === 'PASSWORD_RECOVERY') {
+          // 비밀번호 재설정 이벤트 감지됨
+          setIsValidSession(true)
           setCheckingSession(false)
-          return
+        } else if (event === 'SIGNED_IN' && session) {
+          // 세션이 설정됨
+          setIsValidSession(true)
+          setCheckingSession(false)
+        } else if (event === 'INITIAL_SESSION') {
+          // 초기 세션 확인
+          if (session) {
+            setIsValidSession(true)
+          } else {
+            // 세션이 없으면 URL hash 확인 후 잠시 대기
+            setTimeout(async () => {
+              const { data: { session: retrySession } } = await supabase.auth.getSession()
+              if (retrySession) {
+                setIsValidSession(true)
+              } else {
+                setError('세션이 만료되었거나 유효하지 않습니다. 비밀번호 찾기를 다시 시도해주세요.')
+              }
+              setCheckingSession(false)
+            }, 500)
+            return
+          }
+          setCheckingSession(false)
         }
-
-        setIsValidSession(true)
-      } catch (err) {
-        console.error('Session check error:', err)
-        setError('세션 확인 중 오류가 발생했습니다.')
-      } finally {
-        setCheckingSession(false)
       }
-    }
+    )
 
-    checkSession()
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [supabase])
 
   const handleSubmit = async (e: React.FormEvent) => {
