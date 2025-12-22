@@ -7,6 +7,26 @@ import Header from '@/components/Header'
 
 export default function Home() {
   const [showFloatingCTA, setShowFloatingCTA] = useState(false)
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
+
+  // FAQ 데이터
+  const faqData = [
+    {
+      icon: '📦',
+      question: '배송 기간은 얼마나 걸리나요?',
+      answer: '주문 확정 후 20일 이내에 발송됩니다. 국내 자체 제작으로 빠르고 안전하게 배송해드려요.',
+    },
+    {
+      icon: '📁',
+      question: '어떤 파일 형식을 지원하나요?',
+      answer: 'Adobe Illustrator(.ai) 파일을 권장합니다. 벡터 형식이어야 고품질 뱃지 제작이 가능해요.',
+    },
+    {
+      icon: '🔢',
+      question: '최소 주문 수량은?',
+      answer: '1개부터 주문 가능합니다! 소량 주문도 부담 없이 진행하실 수 있어요.',
+    },
+  ]
 
   useEffect(() => {
     const handleScroll = () => {
@@ -427,6 +447,88 @@ export default function Home() {
               <p className="text-3xl sm:text-4xl font-bold text-white mb-1">99%</p>
               <p className="text-gray-500 text-sm">고객 만족도</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 sm:py-24 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
+              자주 묻는 질문
+            </h2>
+            <p className="text-gray-600 text-lg">
+              궁금한 점이 있으신가요?
+            </p>
+          </div>
+
+          {/* PC: 그리드 카드 (lg 이상에서만 표시) */}
+          <div className="hidden lg:grid lg:grid-cols-3 gap-6">
+            {faqData.map((faq, i) => (
+              <div
+                key={i}
+                className="bg-gray-50 rounded-2xl p-6 hover:bg-gray-100 transition-colors"
+              >
+                <div className="text-3xl mb-4">{faq.icon}</div>
+                <h3 className="font-bold text-lg mb-3 text-gray-900">
+                  {faq.question}
+                </h3>
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  {faq.answer}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* 모바일: 아코디언 (lg 미만에서만 표시) */}
+          <div className="lg:hidden space-y-3">
+            {faqData.map((faq, i) => (
+              <div
+                key={i}
+                className="bg-gray-50 rounded-2xl overflow-hidden"
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full px-6 py-4 flex items-center justify-between text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{faq.icon}</span>
+                    <span className="font-semibold text-gray-900">{faq.question}</span>
+                  </div>
+                  <span
+                    className={`text-gray-400 transition-transform duration-200 ${
+                      openFaq === i ? 'rotate-180' : ''
+                    }`}
+                  >
+                    ▼
+                  </span>
+                </button>
+                <div
+                  className={`px-6 overflow-hidden transition-all duration-200 ${
+                    openFaq === i ? 'pb-5 max-h-40' : 'max-h-0'
+                  }`}
+                >
+                  <p className="text-gray-600 leading-relaxed pl-9">
+                    {faq.answer}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 추가 문의 안내 */}
+          <div className="mt-10 text-center">
+            <p className="text-gray-500 text-sm">
+              더 궁금한 점이 있으신가요?{' '}
+              <a
+                href="mailto:hello.heybadge@gmail.com"
+                className="text-primary-600 font-medium hover:underline"
+              >
+                hello.heybadge@gmail.com
+              </a>
+              으로 문의해주세요!
+            </p>
           </div>
         </div>
       </section>
