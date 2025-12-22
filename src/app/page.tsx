@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Header from '@/components/Header'
+import KakaoChat from '@/components/KakaoChat'
 
 export default function Home() {
   const [showFloatingCTA, setShowFloatingCTA] = useState(false)
@@ -550,6 +551,9 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* KakaoTalk Chat Button */}
+      <KakaoChat />
 
       {/* Mobile Floating CTA */}
       <div
