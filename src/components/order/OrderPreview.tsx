@@ -26,6 +26,7 @@ interface OrderPreviewProps {
   handleOrder: () => void
   handleAddToCart: () => void
   handleDownloadQuote: () => void
+  onRemoveItem?: (id: string) => void  // 주문 요약에서 항목 삭제
 }
 
 export default function OrderPreview({
@@ -42,6 +43,7 @@ export default function OrderPreview({
   handleOrder,
   handleAddToCart,
   handleDownloadQuote,
+  onRemoveItem,
 }: OrderPreviewProps) {
   // 배송비 계산은 금형비 제외한 순수 상품가 기준
   const productPrice = totalPrice - totalMoldFee
@@ -63,7 +65,7 @@ export default function OrderPreview({
                 const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
                 const moldFee = item.isNewMold ? MOLD_FEE : 0
                 return (
-                  <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                  <div key={item.id} className="group flex justify-between items-center p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1">
                         <p className="font-medium text-sm truncate">{item.designName}</p>
@@ -73,7 +75,19 @@ export default function OrderPreview({
                       </div>
                       <p className="text-xs text-gray-500">{item.quantity}개</p>
                     </div>
-                    <p className="font-semibold text-sm ml-2">₩{(itemPrice.total + moldFee).toLocaleString()}</p>
+                    <div className="flex items-center gap-2 ml-2">
+                      <p className="font-semibold text-sm">₩{(itemPrice.total + moldFee).toLocaleString()}</p>
+                      {/* 삭제 버튼 - 모바일: 항상 표시 / 데스크톱: 호버 시 표시 */}
+                      {onRemoveItem && (
+                        <button
+                          onClick={() => onRemoveItem(item.id)}
+                          className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
+                          title="삭제"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )
               })}

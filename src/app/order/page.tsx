@@ -498,6 +498,7 @@ export default function OrderPage() {
               handleOrder={handleOrder}
               handleAddToCart={handleAddToCart}
               handleDownloadQuote={handleDownloadQuote}
+              onRemoveItem={handleRemoveItem}
             />
           </div>
         </div>
