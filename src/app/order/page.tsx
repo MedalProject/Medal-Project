@@ -115,6 +115,19 @@ export default function OrderPage() {
     }
   }
 
+  // 주문 목록으로 스크롤하는 함수
+  const scrollToOrderList = () => {
+    setTimeout(() => {
+      const orderListElement = document.getElementById('order-item-list')
+      if (orderListElement) {
+        orderListElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        })
+      }
+    }, 100) // 상태 업데이트 후 스크롤
+  }
+
   // 항목 추가
   const handleAddItem = () => {
     // 신규 디자인 모드일 때
@@ -141,11 +154,14 @@ export default function OrderPage() {
       setOrderItems([...orderItems, newItem])
       setDesignFile(null)
       setQuantity(1)
-      showToast('항목이 추가되었습니다! (신규 금형)')
+      showToast('✅ 주문 목록에 추가되었습니다!')
       
       // 파일 입력 초기화
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
       if (fileInput) fileInput.value = ''
+      
+      // 주문 목록으로 스크롤
+      scrollToOrderList()
     } 
     // 기존 디자인 재사용 모드일 때
     else {
@@ -170,7 +186,10 @@ export default function OrderPage() {
       setOrderItems([...orderItems, newItem])
       setSelectedDesign(null)
       setQuantity(1)
-      showToast('항목이 추가되었습니다! (기존 금형 재사용)')
+      showToast('✅ 주문 목록에 추가되었습니다! (금형 재사용)')
+      
+      // 주문 목록으로 스크롤
+      scrollToOrderList()
     }
   }
 

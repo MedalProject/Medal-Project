@@ -27,7 +27,7 @@ export default function OrderItemList({
   }
 
   return (
-    <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-emerald-200">
+    <div id="order-item-list" className="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-emerald-200">
       {/* 헤더 */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-11 h-11 bg-emerald-500 rounded-xl flex items-center justify-center text-xl shadow-lg shadow-emerald-500/30">
