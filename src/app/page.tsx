@@ -77,18 +77,27 @@ export default function Home() {
           {/* Badge Preview */}
           <div className="mt-16 flex justify-center">
             <div className="relative">
-              <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-full metal-gold shadow-2xl flex items-center justify-center badge-float">
-                <div className="text-center">
-                  <div className="text-5xl sm:text-6xl mb-2">⭐</div>
-                  <div className="text-sm sm:text-base font-bold text-amber-900">YOUR DESIGN</div>
+              {/* 메인 뱃지 이미지 */}
+              <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 badge-float">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-200 via-yellow-100 to-amber-300 rounded-3xl rotate-3 shadow-2xl" />
+                <div className="absolute inset-0 bg-white rounded-3xl shadow-xl overflow-hidden">
+                  <Image
+                    src="/hero_photo.jpeg"
+                    alt="헤이뱃지 실제 제작 사례"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
                 </div>
               </div>
+              
               {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full metal-silver shadow-lg flex items-center justify-center text-2xl animate-bounce">
-                ❤️
+              <div className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 px-4 py-2 bg-white rounded-full shadow-lg flex items-center gap-2 animate-bounce">
+                <span className="text-amber-500">⭐</span>
+                <span className="text-sm font-bold text-gray-700">고퀄리티</span>
               </div>
-              <div className="absolute -bottom-2 -left-6 w-14 h-14 rounded-full metal-gold shadow-lg flex items-center justify-center text-xl animate-bounce delay-300">
-                🎵
+              <div className="absolute -bottom-2 -left-4 sm:-bottom-4 sm:-left-6 px-4 py-2 bg-gradient-to-r from-primary-500 to-blue-400 rounded-full shadow-lg flex items-center gap-2 animate-bounce delay-300">
+                <span className="text-white text-sm font-bold">1개부터 OK</span>
               </div>
             </div>
           </div>
