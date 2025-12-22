@@ -181,3 +181,24 @@ input:focus, select:focus, textarea:focus {
 .animate-scroll-right:hover {
   animation-play-state: paused;
 }
+
+/* 하이라이트 페이드 애니메이션 - 주문 항목 추가 시 */
+@keyframes highlight-fade {
+  0% {
+    background-color: #fef9c3;
+    transform: scale(1.02);
+    box-shadow: 0 4px 20px rgba(250, 204, 21, 0.4);
+  }
+  50% {
+    background-color: #fef9c3;
+  }
+  100% {
+    background-color: white;
+    transform: scale(1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.animate-highlight-fade {
+  animation: highlight-fade 1.5s ease-out;
+}

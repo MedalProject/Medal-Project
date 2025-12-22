@@ -5,6 +5,7 @@
  * 
  * 주문 목록에 추가된 개별 항목을 표시합니다.
  * 수량 변경, 삭제 기능을 제공합니다.
+ * 새로 추가 시 하이라이트 애니메이션이 적용됩니다.
  */
 
 import type { OrderItem } from '@/types/order'
@@ -44,7 +45,7 @@ export default function OrderItemCard({
   }
 
   return (
-    <div className="border border-gray-200 rounded-2xl p-4">
+    <div className="bg-white border border-emerald-200 rounded-2xl p-4 animate-highlight-fade shadow-sm">
       {/* 상단: 디자인명 & 옵션 정보 */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">

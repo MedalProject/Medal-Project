@@ -27,15 +27,15 @@ export default function OrderItemList({
   }
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
+    <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-emerald-200">
       {/* 헤더 */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-11 h-11 bg-primary-100 rounded-xl flex items-center justify-center text-xl">
-          🛒
+        <div className="w-11 h-11 bg-emerald-500 rounded-xl flex items-center justify-center text-xl shadow-lg shadow-emerald-500/30">
+          ✅
         </div>
         <div>
-          <h2 className="font-bold text-lg">주문 목록</h2>
-          <p className="text-gray-500 text-sm">{items.length}개의 디자인이 추가되었습니다</p>
+          <h2 className="font-bold text-lg text-emerald-800">주문 목록</h2>
+          <p className="text-emerald-600 text-sm font-medium">{items.length}개의 디자인이 담겼습니다!</p>
         </div>
       </div>
 
