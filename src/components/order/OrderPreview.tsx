@@ -193,6 +193,7 @@ export default function OrderPreview({
 
         {/* CTA 버튼 */}
         <div className="mt-6 space-y-3">
+          {/* 주요 주문 버튼 */}
           <button
             onClick={handleOrder}
             disabled={loading || orderItems.length === 0}
@@ -200,18 +201,22 @@ export default function OrderPreview({
           >
             {loading ? '처리 중...' : 
              orderItems.length === 0 ? '항목을 추가해주세요' :
-             `${orderItems.length}건 바로 주문하기`}
+             user ? `${orderItems.length}건 바로 주문하기` : `⚡ ${orderItems.length}건 빠른 주문하기`}
           </button>
           
-          {/* 장바구니 버튼 - 로그인한 경우에만 활성화 */}
+          {/* 두 번째 버튼: 로그인 여부에 따라 다른 동작 */}
           <button
             onClick={handleAddToCart}
-            disabled={loading || orderItems.length === 0 || !user}
+            disabled={loading || orderItems.length === 0}
             className="w-full py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold text-lg hover:border-primary-500 hover:text-primary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {!user ? '🛒 로그인 후 장바구니 이용' : 
-             orderItems.length === 0 ? '🛒 장바구니에 담기' : 
-             `🛒 ${orderItems.length}건 장바구니에 담기`}
+            {user ? (
+              // 로그인 시: 장바구니에 담기
+              orderItems.length === 0 ? '🛒 장바구니에 담기' : `🛒 ${orderItems.length}건 장바구니에 담기`
+            ) : (
+              // 비로그인 시: 로그인하고 주문하기 (클릭 시 로그인 페이지로 이동)
+              '👤 로그인하고 주문하기'
+            )}
           </button>
 
           {/* 견적서 다운로드 버튼 */}
@@ -227,7 +232,7 @@ export default function OrderPreview({
           {/* 비로그인 안내 */}
           {!user && orderItems.length > 0 && (
             <p className="text-xs text-gray-500 text-center">
-              ✓ 회원가입 없이 바로 주문 가능
+              ✓ 빠른 주문: 회원가입 없이 3분 완료
             </p>
           )}
         </div>
