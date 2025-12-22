@@ -435,7 +435,7 @@ export default function Home() {
             href="/order"
             className="inline-block px-10 py-5 bg-white text-primary-600 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
           >
-            무료로 디자인 시작하기 →
+            나만의 뱃지 만들기 →
           </Link>
         </div>
       </section>
