@@ -103,7 +103,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-200 via-yellow-100 to-amber-300 rounded-3xl rotate-3 shadow-2xl" />
                 <div className="absolute inset-0 bg-white rounded-3xl shadow-xl overflow-hidden">
                   <Image
-                    src="/hero_photo.jpeg"
+                    src="/hero_badges.JPG"
                     alt="헤이뱃지 실제 제작 사례"
                     fill
                     className="object-cover"
