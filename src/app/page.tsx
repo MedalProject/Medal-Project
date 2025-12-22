@@ -136,6 +136,81 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-16 sm:py-24 px-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
+              이렇게 진행됩니다
+            </h2>
+            <p className="text-gray-600 text-lg">
+              간단한 4단계로 나만의 뱃지를 완성하세요
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                step: '01',
+                icon: '📤',
+                title: '디자인 업로드',
+                desc: 'AI 파일을 업로드하면 바로 미리보기가 가능해요',
+                color: 'from-blue-500 to-cyan-500',
+              },
+              {
+                step: '02',
+                icon: '🎨',
+                title: '옵션 선택',
+                desc: '칠 종류, 도금 색상, 크기를 선택하세요',
+                color: 'from-purple-500 to-pink-500',
+              },
+              {
+                step: '03',
+                icon: '💳',
+                title: '주문 & 결제',
+                desc: '실시간 견적 확인 후 간편하게 결제하세요',
+                color: 'from-amber-500 to-orange-500',
+              },
+              {
+                step: '04',
+                icon: '📦',
+                title: '제작 & 배송',
+                desc: '국내 제작으로 20일 이내 안전하게 배송해요',
+                color: 'from-green-500 to-emerald-500',
+              },
+            ].map((item, i) => (
+              <div key={i} className="relative">
+                {/* 연결선 (마지막 아이템 제외) */}
+                {i < 3 && (
+                  <div className="hidden lg:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-gray-300 to-transparent" />
+                )}
+                
+                <div className="relative bg-white rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+                  {/* 단계 번호 */}
+                  <div className={`absolute -top-4 -left-2 w-10 h-10 rounded-full bg-gradient-to-r ${item.color} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
+                    {item.step}
+                  </div>
+                  
+                  {/* 아이콘 */}
+                  <div className="text-4xl mb-4 mt-2">{item.icon}</div>
+                  
+                  {/* 콘텐츠 */}
+                  <h3 className="font-bold text-xl mb-2">{item.title}</h3>
+                  <p className="text-gray-500 leading-relaxed text-sm">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 추가 안내 */}
+          <div className="mt-12 text-center">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary-50 rounded-full">
+              <span className="text-primary-600 font-medium">💡 회원가입 없이도 바로 주문 가능해요!</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Official Partners Section */}
       <section className="py-16 sm:py-24 px-4 bg-gradient-to-b from-gray-900 to-gray-800 relative overflow-hidden">
         {/* Background decoration */}
