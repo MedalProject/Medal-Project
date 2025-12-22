@@ -29,6 +29,7 @@ export default function Home() {
             {/* Feature badges */}
             <div className="flex flex-wrap justify-center gap-3 mb-10">
               {[
+                { icon: '✓', text: '비회원 주문 가능' },
                 { icon: '✓', text: '최소 1개부터 주문' },
                 { icon: '✓', text: '실시간 가격 확인' },
                 { icon: '✓', text: '20일 이내 발송' },
