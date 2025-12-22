@@ -350,11 +350,6 @@ export default function OrderPage() {
 
   // Handle order - 장바구니에 담고 checkout으로 이동
   const handleOrder = async () => {
-    if (!user) {
-      router.push('/login')
-      return
-    }
-
     if (orderItems.length === 0) {
       showToast('주문할 항목을 추가해주세요.')
       return
@@ -363,34 +358,48 @@ export default function OrderPage() {
     setLoading(true)
 
     try {
-      // 먼저 장바구니에 모든 항목 추가
-      for (const item of orderItems) {
-        let designUrl = item.designUrl
-        let designId = item.designId
+      // 로그인한 경우: 장바구니에 저장
+      if (user) {
+        for (const item of orderItems) {
+          let designUrl = item.designUrl
+          let designId = item.designId
 
-        // 신규 디자인인 경우 업로드 및 저장
-        if (item.isNewMold && item.file) {
-          const result = await uploadAndSaveDesign(item.file, user.id)
-          if (result) {
-            designUrl = result.designUrl
-            designId = result.designId
+          // 신규 디자인인 경우 업로드 및 저장
+          if (item.isNewMold && item.file) {
+            const result = await uploadAndSaveDesign(item.file, user.id)
+            if (result) {
+              designUrl = result.designUrl
+              designId = result.designId
+            }
           }
-        }
 
-        // Add to cart (design_id, is_new_mold는 DB 스키마 업데이트 후 활성화)
-        const { error } = await supabase.from('cart_items').insert({
-          user_id: user.id,
+          // Add to cart (design_id, is_new_mold는 DB 스키마 업데이트 후 활성화)
+          const { error } = await supabase.from('cart_items').insert({
+            user_id: user.id,
+            paint_type: item.paintType,
+            metal_color: item.metalColor,
+            size: item.size,
+            quantity: item.quantity,
+            design_url: designUrl,
+            design_name: item.designName,
+            // design_id: designId,        // TODO: DB 스키마 업데이트 후 활성화
+            // is_new_mold: item.isNewMold, // TODO: DB 스키마 업데이트 후 활성화
+          })
+
+          if (error) throw error
+        }
+      } else {
+        // 비로그인 경우: localStorage에 임시 저장
+        const tempItems = orderItems.map(item => ({
+          id: item.id,
           paint_type: item.paintType,
           metal_color: item.metalColor,
           size: item.size,
           quantity: item.quantity,
-          design_url: designUrl,
+          design_url: item.designUrl,
           design_name: item.designName,
-          // design_id: designId,        // TODO: DB 스키마 업데이트 후 활성화
-          // is_new_mold: item.isNewMold, // TODO: DB 스키마 업데이트 후 활성화
-        })
-
-        if (error) throw error
+        }))
+        localStorage.setItem('tempCheckoutItems', JSON.stringify(tempItems))
       }
 
       // checkout 페이지로 이동

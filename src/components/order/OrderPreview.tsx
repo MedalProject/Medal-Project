@@ -199,17 +199,19 @@ export default function OrderPreview({
             className="w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? '처리 중...' : 
-             !user ? '로그인하고 주문하기' : 
              orderItems.length === 0 ? '항목을 추가해주세요' :
              `${orderItems.length}건 바로 주문하기`}
           </button>
           
+          {/* 장바구니 버튼 - 로그인한 경우에만 활성화 */}
           <button
             onClick={handleAddToCart}
-            disabled={loading || orderItems.length === 0}
+            disabled={loading || orderItems.length === 0 || !user}
             className="w-full py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold text-lg hover:border-primary-500 hover:text-primary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {orderItems.length === 0 ? '🛒 장바구니에 담기' : `🛒 ${orderItems.length}건 장바구니에 담기`}
+            {!user ? '🛒 로그인 후 장바구니 이용' : 
+             orderItems.length === 0 ? '🛒 장바구니에 담기' : 
+             `🛒 ${orderItems.length}건 장바구니에 담기`}
           </button>
 
           {/* 견적서 다운로드 버튼 */}
@@ -221,6 +223,13 @@ export default function OrderPreview({
             <span>📄</span>
             견적서 다운로드 (PDF)
           </button>
+
+          {/* 비로그인 안내 */}
+          {!user && orderItems.length > 0 && (
+            <p className="text-xs text-gray-500 text-center">
+              ✓ 회원가입 없이 바로 주문 가능
+            </p>
+          )}
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-4">

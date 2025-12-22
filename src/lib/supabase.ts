@@ -19,7 +19,8 @@ export type Profile = {
 
 export type Order = {
   id: string
-  user_id: string
+  user_id: string | null  // 비회원 주문 시 null
+  guest_email: string | null  // 비회원 주문 시 이메일 저장
   order_number: string
   status: 'pending' | 'confirmed' | 'producing' | 'shipping' | 'completed' | 'cancelled'
   paint_type: string
@@ -33,8 +34,11 @@ export type Order = {
   total_price: number
   shipping_name: string | null
   shipping_phone: string | null
+  shipping_zonecode: string | null
   shipping_address: string | null
+  shipping_address_detail: string | null
   shipping_memo: string | null
+  payment_method: string | null
   created_at: string
   paid_at: string | null
   shipped_at: string | null

@@ -56,6 +56,12 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [toast, setToast] = useState('')
+  const [toastType, setToastType] = useState<'success' | 'error'>('success')
+
+  // 비회원 주문용 이메일 상태
+  const [guestEmail, setGuestEmail] = useState('')
+  const [guestEmailConfirm, setGuestEmailConfirm] = useState('')
+  const [emailError, setEmailError] = useState('')
 
   // 배송지 정보
   const [shippingInfo, setShippingInfo] = useState({
@@ -70,31 +76,35 @@ export default function CheckoutPage() {
   // 결제 방법
   const [paymentMethod, setPaymentMethod] = useState('bank')
 
+  // 주문 완료 상태
+  const [orderComplete, setOrderComplete] = useState(false)
+  const [completedOrderNumber, setCompletedOrderNumber] = useState('')
+  const [completedEmail, setCompletedEmail] = useState('')
+
   useEffect(() => {
     const loadCheckoutData = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push('/login')
-        return
-      }
-      
       setUser(user)
 
-      // 장바구니에서 아이템 불러오기
-      const { data: cartItems } = await supabase
-        .from('cart_items')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+      // 로그인한 경우 장바구니에서 아이템 불러오기
+      if (user) {
+        const { data: cartItems } = await supabase
+          .from('cart_items')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
 
-      if (cartItems && cartItems.length > 0) {
-        setItems(cartItems)
-      } else {
-        // 장바구니가 비어있으면 localStorage에서 임시 주문 확인
-        const tempOrder = localStorage.getItem('tempCheckoutItems')
-        if (tempOrder) {
-          setItems(JSON.parse(tempOrder))
+        if (cartItems && cartItems.length > 0) {
+          setItems(cartItems)
+        }
+      }
+
+      // localStorage에서 임시 주문 확인 (비로그인 주문 또는 백업)
+      const tempOrder = localStorage.getItem('tempCheckoutItems')
+      if (tempOrder) {
+        const parsedItems = JSON.parse(tempOrder)
+        if (parsedItems.length > 0) {
+          setItems(parsedItems)
         }
       }
 
@@ -120,8 +130,9 @@ export default function CheckoutPage() {
     return metalColors.find(m => m.id === color)?.name || color
   }
 
-  const showToast = (message: string) => {
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast(message)
+    setToastType(type)
     setTimeout(() => setToast(''), 3000)
   }
 
@@ -138,12 +149,49 @@ export default function CheckoutPage() {
         }
       }).open()
     } else {
-      showToast('주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+      showToast('주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'error')
     }
+  }
+
+  // 이메일 유효성 검사
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  // 이메일 확인 검증
+  const validateGuestEmail = (): boolean => {
+    // 로그인한 경우 검증 불필요
+    if (user) return true
+
+    if (!guestEmail) {
+      setEmailError('이메일을 입력해주세요.')
+      return false
+    }
+
+    if (!validateEmail(guestEmail)) {
+      setEmailError('올바른 이메일 형식이 아닙니다.')
+      return false
+    }
+
+    if (guestEmail !== guestEmailConfirm) {
+      setEmailError('이메일이 일치하지 않습니다.')
+      return false
+    }
+
+    setEmailError('')
+    return true
   }
 
   // 폼 유효성 검사
   const isFormValid = () => {
+    // 비회원 이메일 검증
+    if (!user) {
+      if (!guestEmail || !validateEmail(guestEmail) || guestEmail !== guestEmailConfirm) {
+        return false
+      }
+    }
+
     return (
       shippingInfo.name.trim() !== '' &&
       shippingInfo.phone.trim() !== '' &&
@@ -154,22 +202,32 @@ export default function CheckoutPage() {
 
   // 주문 완료
   const handleSubmitOrder = async () => {
-    if (!user) return
+    // 이메일 검증
+    if (!validateGuestEmail()) {
+      return
+    }
     
     if (!isFormValid()) {
-      showToast('배송지 정보를 모두 입력해주세요.')
+      showToast('배송지 정보를 모두 입력해주세요.', 'error')
       return
     }
 
     setSubmitting(true)
 
     try {
+      // 주문할 이메일 결정 (회원: user.email, 비회원: guestEmail)
+      const orderEmail = user ? user.email : guestEmail
+      let lastOrderNumber = ''
+
       for (const item of items) {
         const orderNumber = `HB${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
+        lastOrderNumber = orderNumber
         const itemPrice = calculatePrice(item.paint_type, item.size, item.quantity)
 
-        const { error } = await supabase.from('orders').insert({
-          user_id: user.id,
+        // 주문 데이터 생성
+        const orderData = {
+          user_id: user ? user.id : null,  // 비회원은 null
+          guest_email: user ? null : guestEmail,  // 회원은 null
           order_number: orderNumber,
           paint_type: item.paint_type,
           metal_color: item.metal_color,
@@ -189,33 +247,48 @@ export default function CheckoutPage() {
           shipping_address_detail: shippingInfo.addressDetail,
           shipping_memo: shippingInfo.memo,
           payment_method: paymentMethod,
-        })
+        }
+
+        const { error } = await supabase.from('orders').insert(orderData)
 
         if (error) throw error
       }
 
-      // 장바구니 비우기
-      await supabase
-        .from('cart_items')
-        .delete()
-        .eq('user_id', user.id)
+      // 회원인 경우 장바구니 비우기
+      if (user) {
+        await supabase
+          .from('cart_items')
+          .delete()
+          .eq('user_id', user.id)
+      }
 
       // localStorage 임시 데이터 삭제
       localStorage.removeItem('tempCheckoutItems')
 
-      showToast('주문이 완료되었습니다!')
-      
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 1500)
+      // 주문 완료 상태로 전환
+      setOrderComplete(true)
+      setCompletedOrderNumber(lastOrderNumber)
+      setCompletedEmail(orderEmail || '')
+
     } catch (error) {
       console.error('Order error:', error)
-      showToast('주문 중 오류가 발생했습니다.')
+      showToast('주문 중 오류가 발생했습니다.', 'error')
     } finally {
       setSubmitting(false)
     }
   }
 
+  // 주문번호 복사
+  const handleCopyOrderNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(completedOrderNumber)
+      showToast('주문번호가 복사되었습니다!')
+    } catch {
+      showToast('복사에 실패했습니다.', 'error')
+    }
+  }
+
+  // 로딩 상태
   if (loading) {
     return (
       <>
@@ -230,6 +303,89 @@ export default function CheckoutPage() {
     )
   }
 
+  // 주문 완료 화면
+  if (orderComplete) {
+    return (
+      <>
+        <Header />
+        <main className="pt-24 pb-16 px-4 bg-gray-50 min-h-screen">
+          <div className="max-w-lg mx-auto">
+            <div className="bg-white rounded-3xl p-8 shadow-sm text-center">
+              {/* 완료 아이콘 */}
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+                ✅
+              </div>
+
+              <h1 className="text-2xl font-bold mb-2">주문이 완료되었습니다!</h1>
+              <p className="text-gray-500 mb-8">
+                아래 주문번호로 주문 상태를 확인하실 수 있습니다.
+              </p>
+
+              {/* 주문번호 */}
+              <div className="bg-gray-50 rounded-2xl p-6 mb-6">
+                <p className="text-sm text-gray-500 mb-2">주문번호</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="font-display text-2xl font-bold text-primary-600">
+                    {completedOrderNumber}
+                  </span>
+                  <button
+                    onClick={handleCopyOrderNumber}
+                    className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    📋 복사
+                  </button>
+                </div>
+              </div>
+
+              {/* 이메일 안내 */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8 text-left">
+                <p className="text-sm text-blue-800">
+                  <strong>📧 {completedEmail}</strong>으로<br />
+                  주문 확인 안내를 보내드렸습니다.
+                </p>
+                <p className="text-xs text-blue-600 mt-2">
+                  ⚠️ 주문번호를 꼭 저장해주세요! 주문 조회 시 필요합니다.
+                </p>
+              </div>
+
+              {/* 액션 버튼들 */}
+              <div className="space-y-3">
+                <Link
+                  href="/order-lookup"
+                  className="block w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all text-center"
+                >
+                  주문 조회하기
+                </Link>
+
+                {!user && (
+                  <div className="pt-4 border-t border-gray-100">
+                    <p className="text-sm text-gray-500 mb-3">
+                      💡 회원가입하시면 주문 내역이 자동으로 저장됩니다!
+                    </p>
+                    <Link
+                      href="/signup"
+                      className="block w-full py-3 bg-white border-2 border-primary-500 text-primary-600 rounded-xl font-bold hover:bg-primary-50 transition-colors text-center"
+                    >
+                      회원가입하기 (30초)
+                    </Link>
+                  </div>
+                )}
+
+                <Link
+                  href="/"
+                  className="block text-gray-500 hover:text-gray-700 text-sm py-2"
+                >
+                  ← 홈으로 돌아가기
+                </Link>
+              </div>
+            </div>
+          </div>
+        </main>
+      </>
+    )
+  }
+
+  // 주문할 상품이 없는 경우
   if (items.length === 0) {
     return (
       <>
@@ -265,12 +421,97 @@ export default function CheckoutPage() {
           {/* 페이지 헤더 */}
           <div className="mb-8">
             <h1 className="font-display text-3xl font-bold mb-2">주문/결제</h1>
-            <p className="text-gray-500">배송지와 결제 정보를 입력해주세요</p>
+            <p className="text-gray-500">
+              {user ? '배송지와 결제 정보를 입력해주세요' : '주문 정보를 입력해주세요'}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* 왼쪽: 배송지 & 결제 */}
+            {/* 왼쪽: 주문자 정보 & 배송지 & 결제 */}
             <div className="lg:col-span-2 space-y-6">
+              
+              {/* 주문자 이메일 (비회원용 또는 회원 표시용) */}
+              <div className="bg-white rounded-3xl p-6 shadow-sm">
+                <h2 className="font-bold text-lg mb-6 flex items-center gap-2">
+                  <span className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600">📧</span>
+                  주문자 정보
+                </h2>
+
+                {user ? (
+                  // 로그인한 경우: 이메일 표시만
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      이메일
+                    </label>
+                    <input
+                      type="email"
+                      value={user.email || ''}
+                      disabled
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600 cursor-not-allowed"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      ✓ 로그인 계정: {user.email}
+                    </p>
+                  </div>
+                ) : (
+                  // 비로그인: 이메일 입력
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        이메일 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={guestEmail}
+                        onChange={(e) => {
+                          setGuestEmail(e.target.value)
+                          setEmailError('')
+                        }}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
+                          emailError ? 'border-red-400' : 'border-gray-200'
+                        }`}
+                        placeholder="your@email.com"
+                      />
+                      <p className="text-xs text-gray-500 mt-2">
+                        주문 확인 및 조회에 필요합니다
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        이메일 확인 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={guestEmailConfirm}
+                        onChange={(e) => {
+                          setGuestEmailConfirm(e.target.value)
+                          setEmailError('')
+                        }}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
+                          emailError ? 'border-red-400' : 'border-gray-200'
+                        }`}
+                        placeholder="이메일을 다시 입력해주세요"
+                      />
+                    </div>
+
+                    {emailError && (
+                      <p className="text-sm text-red-500">{emailError}</p>
+                    )}
+
+                    {/* 로그인 유도 (작게) */}
+                    <div className="pt-2 border-t border-gray-100">
+                      <p className="text-xs text-gray-500">
+                        💡 이미 회원이신가요?{' '}
+                        <Link href="/login" className="text-primary-600 font-medium hover:underline">
+                          로그인하기
+                        </Link>
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* 배송지 정보 */}
               <div className="bg-white rounded-3xl p-6 shadow-sm">
                 <h2 className="font-bold text-lg mb-6 flex items-center gap-2">
@@ -341,7 +582,6 @@ export default function CheckoutPage() {
                       placeholder="상세주소를 입력해주세요"
                     />
                   </div>
-
                 </div>
               </div>
 
@@ -381,7 +621,7 @@ export default function CheckoutPage() {
                 {paymentMethod === 'bank' && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-xl">
                     <p className="text-sm text-blue-800">
-                      <strong>입금 계좌:</strong> 신한은행 110-123-456789 (예금주: 바로해)
+                      <strong>입금 계좌:</strong> 신한은행 110-123-456789 (예금주: 헤이뱃지)
                     </p>
                     <p className="text-sm text-blue-600 mt-1">
                       주문 후 24시간 이내 입금해주세요.
@@ -478,12 +718,17 @@ export default function CheckoutPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-8 right-8 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-fade-in">
-          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">✓</div>
+        <div className={`fixed bottom-8 right-8 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-fade-in ${
+          toastType === 'error' ? 'bg-red-600 text-white' : 'bg-gray-900 text-white'
+        }`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            toastType === 'error' ? 'bg-white text-red-600' : 'bg-green-500 text-white'
+          }`}>
+            {toastType === 'error' ? '!' : '✓'}
+          </div>
           {toast}
         </div>
       )}
     </>
   )
 }
-

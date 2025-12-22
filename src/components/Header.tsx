@@ -70,6 +70,9 @@ export default function Header() {
             <Link href="/gallery" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">
               제작 사례 보기
             </Link>
+            <Link href="/order-lookup" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">
+              주문 조회
+            </Link>
           </nav>
 
           {/* Auth Buttons - Desktop */}
@@ -200,6 +203,13 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(false)}
             >
               제작 사례 보기
+            </Link>
+            <Link
+              href="/order-lookup"
+              className="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              📦 주문 조회
             </Link>
             <Link
               href="/cart"
