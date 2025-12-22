@@ -386,9 +386,20 @@ export default function Home() {
           
           <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
             <span>© 2025 HeyBadge. All rights reserved.</span>
-            <Link href="/refund" className="hover:text-white transition-colors">
-              환불규정
-            </Link>
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+              <Link href="/order-lookup" className="hover:text-white transition-colors">
+                주문조회
+              </Link>
+              <Link href="/terms" className="hover:text-white transition-colors">
+                이용약관
+              </Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">
+                개인정보처리방침
+              </Link>
+              <Link href="/refund" className="hover:text-white transition-colors">
+                환불규정
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
