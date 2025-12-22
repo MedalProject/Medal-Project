@@ -1,10 +1,23 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Header from '@/components/Header'
 
 export default function Home() {
+  const [showFloatingCTA, setShowFloatingCTA] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Hero 섹션 높이(약 600px) 이후에 플로팅 버튼 표시
+      setShowFloatingCTA(window.scrollY > 600)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
     <>
       <Header />
@@ -426,6 +439,26 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Mobile Floating CTA */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden transition-all duration-300 ${
+          showFloatingCTA 
+            ? 'translate-y-0 opacity-100' 
+            : 'translate-y-full opacity-0'
+        }`}
+      >
+        <div className="bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+          <Link
+            href="/order"
+            className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 active:scale-[0.98] transition-transform"
+          >
+            <span>⚡</span>
+            <span>지금 만들어보기</span>
+            <span>→</span>
+          </Link>
+        </div>
+      </div>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-10 sm:py-12 px-4">
