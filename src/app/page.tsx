@@ -101,7 +101,7 @@ export default function Home() {
               {/* 메인 뱃지 이미지 - 배경 투명 효과 */}
               <div className="relative w-80 h-52 sm:w-[450px] sm:h-72 lg:w-[550px] lg:h-80 badge-float">
                 <Image
-                  src="/hero_badges.JPG"
+                  src="/hero_badges.png"
                   alt="헤이뱃지 실제 제작 사례 - 올림픽 뱃지"
                   fill
                   className="object-contain mix-blend-multiply"
