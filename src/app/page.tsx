@@ -98,13 +98,13 @@ export default function Home() {
           {/* Badge Preview */}
           <div className="mt-16 flex justify-center">
             <div className="relative">
-              {/* 메인 뱃지 이미지 - 미니멀 스타일 */}
-              <div className="relative w-72 h-48 sm:w-[400px] sm:h-64 lg:w-[500px] lg:h-80 badge-float">
+              {/* 메인 뱃지 이미지 - 배경 투명 효과 */}
+              <div className="relative w-80 h-52 sm:w-[450px] sm:h-72 lg:w-[550px] lg:h-80 badge-float">
                 <Image
                   src="/hero_badges.JPG"
                   alt="헤이뱃지 실제 제작 사례 - 올림픽 뱃지"
                   fill
-                  className="object-contain rounded-2xl shadow-2xl"
+                  className="object-contain mix-blend-multiply"
                   priority
                 />
               </div>
