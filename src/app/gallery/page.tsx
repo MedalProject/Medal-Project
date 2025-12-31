@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Header from '@/components/Header'
 import { createClient, ReferenceItem, getPaintTypeName, getMetalColorName } from '@/lib/supabase'
@@ -8,7 +8,27 @@ import { createClient, ReferenceItem, getPaintTypeName, getMetalColorName } from
 export default function GalleryPage() {
   const [referenceItems, setReferenceItems] = useState<ReferenceItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedItem, setSelectedItem] = useState<ReferenceItem | null>(null)
   const supabase = createClient()
+
+  // ESC 키로 모달 닫기
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setSelectedItem(null)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (selectedItem) {
+      document.addEventListener('keydown', handleKeyDown)
+      // 모달 열릴 때 스크롤 방지
+      document.body.style.overflow = 'hidden'
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'unset'
+    }
+  }, [selectedItem, handleKeyDown])
 
   useEffect(() => {
     fetchReferenceItems()
@@ -77,7 +97,8 @@ export default function GalleryPage() {
               {referenceItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
+                  onClick={() => setSelectedItem(item)}
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
                 >
                   {/* Image Area */}
                   <div className="aspect-square bg-gray-100 relative overflow-hidden">
@@ -133,6 +154,62 @@ export default function GalleryPage() {
           </div>
         </div>
       </main>
+
+      {/* 이미지 확대 모달 */}
+      {selectedItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => setSelectedItem(null)}
+        >
+          {/* 배경 딤 */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+          
+          {/* 모달 콘텐츠 */}
+          <div
+            className="relative max-w-4xl w-full max-h-[90vh] animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="absolute -top-12 right-0 text-white/80 hover:text-white transition-colors z-10"
+              aria-label="닫기"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* 이미지 */}
+            <div className="relative aspect-square sm:aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100">
+              <Image
+                src={selectedItem.image_url}
+                alt={selectedItem.title}
+                fill
+                className="object-contain p-4"
+                sizes="(max-width: 1024px) 100vw, 896px"
+                priority
+              />
+            </div>
+
+            {/* 이미지 정보 */}
+            <div className="mt-4 text-center">
+              <h3 className="text-white text-xl font-bold mb-2">{selectedItem.title}</h3>
+              <div className="flex justify-center gap-2 flex-wrap">
+                <span className="px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                  {getPaintTypeName(selectedItem.paint_type)}
+                </span>
+                <span className="px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                  {getMetalColorName(selectedItem.metal_color)}
+                </span>
+                <span className="px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                  {selectedItem.size}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
