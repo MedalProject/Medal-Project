@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { calculatePrice, calculateShippingFee, FREE_SHIPPING_THRESHOLD, MOLD_FEE } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { OrderItem } from '@/types/order'
@@ -159,10 +160,29 @@ export default function OrderPreview({
                 </div>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                  <div className={`w-32 h-32 rounded-full ${METAL_COLORS.find(m => m.id === metalColor)?.class} shadow-2xl flex items-center justify-center mb-4 badge-float`}>
-                    <span className="text-amber-900 font-bold text-sm">DESIGN</span>
-                  </div>
-                  <p className="font-medium text-gray-600 mb-2">디자인 파일을 업로드해주세요</p>
+                  {/* 선택된 도금 이미지 표시 */}
+                  {(() => {
+                    const selectedMetal = METAL_COLORS.find(m => m.id === metalColor)
+                    return selectedMetal?.image ? (
+                      <div className="relative w-40 h-40 mb-4 badge-float">
+                        <Image
+                          src={selectedMetal.image}
+                          alt={selectedMetal.name}
+                          fill
+                          className="object-contain drop-shadow-2xl"
+                          sizes="160px"
+                        />
+                      </div>
+                    ) : (
+                      <div className={`w-32 h-32 rounded-full ${selectedMetal?.class} shadow-2xl flex items-center justify-center mb-4 badge-float`}>
+                        <span className="text-amber-900 font-bold text-sm">DESIGN</span>
+                      </div>
+                    )
+                  })()}
+                  <p className="font-medium text-gray-700 mb-1">
+                    {METAL_COLORS.find(m => m.id === metalColor)?.name} 선택됨
+                  </p>
+                  <p className="text-sm text-gray-500 mb-3">디자인 파일을 업로드해주세요</p>
                   <p className="text-xs text-gray-400">AI 파일만 지원</p>
                 </div>
               )}
