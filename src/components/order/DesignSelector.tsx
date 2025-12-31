@@ -120,7 +120,21 @@ export default function DesignSelector({
           <p className="text-gray-400 text-sm">AI 파일만 지원 (최대 50MB)</p>
           {designFile && (
             <div className="mt-4 space-y-2">
-              <p className="text-primary-600 font-medium">✓ {designFile.name}</p>
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-primary-600 font-medium">✓ {designFile.name}</p>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setDesignFile(null)
+                  }}
+                  className="w-6 h-6 bg-gray-200 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center text-sm transition-colors"
+                  title="파일 삭제"
+                >
+                  ✕
+                </button>
+              </div>
               <p className="text-gray-500 text-xs">
                 크기: {(designFile.size / 1024 / 1024).toFixed(2)} MB
               </p>
