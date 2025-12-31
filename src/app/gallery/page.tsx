@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Header from '@/components/Header'
 import { createClient, ReferenceItem, getPaintTypeName, getMetalColorName } from '@/lib/supabase'
@@ -8,44 +8,7 @@ import { createClient, ReferenceItem, getPaintTypeName, getMetalColorName } from
 export default function GalleryPage() {
   const [referenceItems, setReferenceItems] = useState<ReferenceItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedItem, setSelectedItem] = useState<ReferenceItem | null>(null)
-  const [isZooming, setIsZooming] = useState(false)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 })
   const supabase = createClient()
-
-  // 마우스 움직임에 따른 돋보기 위치 계산
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    // 마우스의 컨테이너 내 상대 위치 (픽셀)
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    // 마우스 위치 (퍼센트) - 배경 이미지 위치 계산용
-    const percentX = (x / rect.width) * 100
-    const percentY = (y / rect.height) * 100
-    
-    setMousePosition({ x, y })
-    setLensPosition({ x: percentX, y: percentY })
-  }
-
-  // ESC 키로 모달 닫기
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setSelectedItem(null)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (selectedItem) {
-      document.addEventListener('keydown', handleKeyDown)
-      // 모달 열릴 때 스크롤 방지
-      document.body.style.overflow = 'hidden'
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = 'unset'
-    }
-  }, [selectedItem, handleKeyDown])
 
   useEffect(() => {
     fetchReferenceItems()
@@ -114,8 +77,7 @@ export default function GalleryPage() {
               {referenceItems.map((item) => (
                 <div
                   key={item.id}
-                  onClick={() => setSelectedItem(item)}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
                 >
                   {/* Image Area */}
                   <div className="aspect-square bg-gray-100 relative overflow-hidden">
@@ -171,99 +133,6 @@ export default function GalleryPage() {
           </div>
         </div>
       </main>
-
-      {/* 이미지 확대 모달 */}
-      {selectedItem && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
-          onClick={() => setSelectedItem(null)}
-        >
-          {/* 배경 딤 */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-          
-          {/* 모달 콘텐츠 */}
-          <div
-            className="relative max-w-4xl w-full max-h-[90vh] animate-scaleIn"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* 닫기 버튼 */}
-            <button
-              onClick={() => setSelectedItem(null)}
-              className="absolute -top-12 right-0 text-white/80 hover:text-white transition-colors z-10"
-              aria-label="닫기"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* 이미지 - 돋보기 렌즈 효과 */}
-            <div 
-              className="relative aspect-square sm:aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 cursor-none"
-              onMouseEnter={() => setIsZooming(true)}
-              onMouseLeave={() => setIsZooming(false)}
-              onMouseMove={handleMouseMove}
-            >
-              {/* 원본 이미지 (배경 - 움직이지 않음) */}
-              <Image
-                src={selectedItem.image_url}
-                alt={selectedItem.title}
-                fill
-                className="object-contain p-4"
-                sizes="(max-width: 1024px) 100vw, 896px"
-                priority
-              />
-              
-              {/* 돋보기 렌즈 */}
-              {isZooming && (
-                <div
-                  className="absolute rounded-full border-4 border-white shadow-2xl pointer-events-none overflow-hidden"
-                  style={{
-                    width: 380,
-                    height: 380,
-                    left: mousePosition.x - 190,
-                    top: mousePosition.y - 190,
-                    backgroundColor: '#f3f4f6',
-                    backgroundImage: `url(${selectedItem.image_url})`,
-                    backgroundSize: '600%',
-                    backgroundPosition: `${lensPosition.x}% ${lensPosition.y}%`,
-                    backgroundRepeat: 'no-repeat',
-                  }}
-                >
-                  {/* 렌즈 내부 하이라이트 */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-full" />
-                </div>
-              )}
-
-              {/* 줌 안내 */}
-              {!isZooming && (
-                <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                  </svg>
-                  마우스를 올려 확대
-                </div>
-              )}
-            </div>
-
-            {/* 이미지 정보 */}
-            <div className="mt-4 text-center">
-              <h3 className="text-white text-xl font-bold mb-2">{selectedItem.title}</h3>
-              <div className="flex justify-center gap-2 flex-wrap">
-                <span className="px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                  {getPaintTypeName(selectedItem.paint_type)}
-                </span>
-                <span className="px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                  {getMetalColorName(selectedItem.metal_color)}
-                </span>
-                <span className="px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                  {selectedItem.size}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

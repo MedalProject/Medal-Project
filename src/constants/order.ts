@@ -7,10 +7,16 @@
 
 import type { MetalColorOption, SizeOption, QuantityTier } from '@/types/order'
 
-// 도금 색상 옵션
+// 도금 색상 옵션 (8종류)
 export const METAL_COLORS: MetalColorOption[] = [
-  { id: 'gold', name: '금도금', class: 'metal-gold' },
-  { id: 'silver', name: '은도금', class: 'metal-silver' },
+  { id: 'gold', name: '금도금', class: 'metal-gold', image: '/plating/plating_gold.png' },
+  { id: 'silver', name: '은도금', class: 'metal-silver', image: '/plating/plating_silver.png' },
+  { id: 'copper', name: '동도금', class: 'metal-copper', image: '/plating/plating_copper.png' },
+  { id: 'black_nickel', name: '흑니켈', class: 'metal-black-nickel', image: '/plating/plating_black_nickel.png' },
+  { id: 'rose_gold', name: '로즈골드', class: 'metal-rose-gold', image: '/plating/plating_rose_gold.png' },
+  { id: 'antique_gold', name: '앤틱 금', class: 'metal-antique-gold', image: '/plating/plating_antique_gold.png' },
+  { id: 'antique_silver', name: '앤틱 은', class: 'metal-antique-silver', image: '/plating/plating_antique_silver.png' },
+  { id: 'antique_copper', name: '앤틱 동', class: 'metal-antique-copper', image: '/plating/plating_antique_copper.png' },
 ]
 
 // 크기 옵션 (lib/supabase.ts의 sizeAddon과 동기화 필요)

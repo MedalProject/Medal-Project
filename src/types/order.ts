@@ -24,6 +24,7 @@ export type MetalColorOption = {
   id: string
   name: string
   class: string
+  image?: string  // 도금 샘플 이미지 경로
 }
 
 // 크기 옵션 타입
