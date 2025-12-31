@@ -219,10 +219,11 @@ export default function GalleryPage() {
                 <div
                   className="absolute rounded-full border-4 border-white shadow-2xl pointer-events-none overflow-hidden"
                   style={{
-                    width: 300,
-                    height: 300,
-                    left: mousePosition.x - 150,
-                    top: mousePosition.y - 150,
+                    width: 380,
+                    height: 380,
+                    left: mousePosition.x - 190,
+                    top: mousePosition.y - 190,
+                    backgroundColor: '#f3f4f6',
                     backgroundImage: `url(${selectedItem.image_url})`,
                     backgroundSize: '600%',
                     backgroundPosition: `${lensPosition.x}% ${lensPosition.y}%`,
@@ -230,7 +231,7 @@ export default function GalleryPage() {
                   }}
                 >
                   {/* 렌즈 내부 하이라이트 */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-full" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-full" />
                 </div>
               )}
 
