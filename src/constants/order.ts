@@ -7,11 +7,11 @@
 
 import type { MetalColorOption, SizeOption, QuantityTier, PaintTypeOption } from '@/types/order'
 
-// 뱃지 종류 옵션 (7종류)
+// 뱃지 종류 옵션 (7종류) - 업계 표준 영문명 ID
 // ⚠️ 이미지와 가격은 나중에 실제 값으로 교체 필요
 export const PAINT_TYPES: PaintTypeOption[] = [
   {
-    id: 'normal',
+    id: 'soft_enamel',
     name: '일반칠',
     description: '가장 기본, 도금선 살짝 높음',
     icon: '🖌️',
@@ -19,7 +19,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     priceAddon: 0,
   },
   {
-    id: 'normal_epoxy',
+    id: 'soft_enamel_epoxy',
     name: '일반칠 + 에폭시',
     description: '투명 코팅으로 고급스러움',
     icon: '💧',
@@ -27,7 +27,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     priceAddon: 300,
   },
   {
-    id: 'resin',
+    id: 'hard_enamel',
     name: '수지칠',
     description: '반투명, 부드러운 색감',
     icon: '🌈',
@@ -35,7 +35,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     priceAddon: 200,
   },
   {
-    id: 'no_paint',
+    id: 'die_struck',
     name: '칠없음',
     description: '금속 질감만 (무도색)',
     icon: '⚙️',
@@ -51,7 +51,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     priceAddon: 500,
   },
   {
-    id: 'uv_print',
+    id: 'printed',
     name: 'UV인쇄',
     description: '사진/그라데이션 표현',
     icon: '🖼️',

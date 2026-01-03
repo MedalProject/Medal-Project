@@ -26,7 +26,7 @@ export default function OrderPage() {
   
   // State
   const [user, setUser] = useState<User | null>(null)
-  const [paintType, setPaintType] = useState('normal')
+  const [paintType, setPaintType] = useState('soft_enamel')
   const [metalColor, setMetalColor] = useState('gold')
   const [size, setSize] = useState(30)
   const [quantity, setQuantity] = useState(1)

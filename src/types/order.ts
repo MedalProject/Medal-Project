@@ -5,15 +5,15 @@
  * 다른 파일에서 import해서 사용하세요.
  */
 
-// 뱃지 종류 (칠 타입)
+// 뱃지 종류 (칠 타입) - 업계 표준 영문명
 export type PaintType = 
-  | 'normal'        // 일반칠
-  | 'normal_epoxy'  // 일반칠 + 에폭시
-  | 'resin'         // 수지칠
-  | 'no_paint'      // 칠없음
-  | '3d'            // 3D 입체
-  | 'uv_print'      // UV인쇄
-  | 'custom'        // 기타 (카카오톡 문의)
+  | 'soft_enamel'       // 일반칠
+  | 'soft_enamel_epoxy' // 일반칠 + 에폭시
+  | 'hard_enamel'       // 수지칠
+  | 'die_struck'        // 칠없음
+  | '3d'                // 3D 입체
+  | 'printed'           // UV인쇄
+  | 'custom'            // 기타 (카카오톡 문의)
 
 // 뱃지 종류 옵션 타입
 export type PaintTypeOption = {
