@@ -98,10 +98,10 @@ export const MOLD_FEE = 90000
 export const priceTable: Record<string, { base: number; addon: number; name: string }> = {
   'soft_enamel': { base: 3500, addon: 0, name: '일반칠' },
   'soft_enamel_epoxy': { base: 3500, addon: 300, name: '일반칠 + 에폭시' },
-  'hard_enamel': { base: 3500, addon: 200, name: '수지칠' },
+  'hard_enamel': { base: 3500, addon: 500, name: '수지칠' },
   'die_struck': { base: 3500, addon: 0, name: '칠없음' },
   '3d': { base: 3500, addon: 500, name: '3D 입체' },
-  'printed': { base: 3500, addon: 400, name: 'UV인쇄' },
+  'printed': { base: 3500, addon: 0, name: 'UV인쇄' },
   'custom': { base: 3500, addon: 0, name: '기타' }, // 별도 견적
 }
 

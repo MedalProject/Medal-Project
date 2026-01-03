@@ -32,15 +32,15 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     description: '반투명, 부드러운 색감',
     icon: '🌈',
     color: 'from-purple-400 to-pink-500',
-    priceAddon: 200,
+    priceAddon: 500,
   },
   {
     id: 'printed',
-    name: 'UV인쇄',
+    name: 'UV 인쇄',
     description: '사진/그라데이션 표현',
     icon: '🖼️',
     color: 'from-rose-400 to-red-500',
-    priceAddon: 400,
+    priceAddon: 0,
   },
   {
     id: '3d',
