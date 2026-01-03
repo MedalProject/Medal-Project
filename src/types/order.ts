@@ -19,7 +19,10 @@ export type PaintType =
 export type PaintTypeOption = {
   id: PaintType
   name: string           // 표시 이름
-  description: string    // 툴팁 설명
+  description: string    // 짧은 툴팁 설명
+  detailedDescription: string[]  // 상세 설명 (bullet points)
+  recommendation: string // 추천 용도
+  image?: string         // 샘플 이미지 경로
   icon: string           // 이모지 아이콘
   color: string          // 배경 그라데이션 색상
   priceAddon: number     // 추가 비용 (원)

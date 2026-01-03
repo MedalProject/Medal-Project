@@ -8,12 +8,19 @@
 import type { MetalColorOption, SizeOption, QuantityTier, PaintTypeOption } from '@/types/order'
 
 // 뱃지 종류 옵션 (7종류) - 업계 표준 영문명 ID
-// ⚠️ 이미지와 가격은 나중에 실제 값으로 교체 필요
+// ⚠️ 이미지는 나중에 실제 값으로 교체 필요 (public/badge-types/ 폴더)
 export const PAINT_TYPES: PaintTypeOption[] = [
   {
     id: 'soft_enamel',
     name: '일반칠',
     description: '가장 기본, 도금선 살짝 높음',
+    detailedDescription: [
+      '도금선이 색상보다 살짝 높아 입체감이 느껴집니다',
+      '가장 대중적이고 인기있는 제작 방식입니다',
+      '선명한 색상 표현이 가능합니다',
+    ],
+    recommendation: '단체 뱃지, 행사용, 기념품',
+    image: '/badge-types/soft_enamel.png',
     icon: '🖌️',
     color: 'from-amber-400 to-orange-500',
     priceAddon: 0,
@@ -22,6 +29,13 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     id: 'soft_enamel_epoxy',
     name: '일반칠 + 에폭시',
     description: '투명 코팅으로 고급스러움',
+    detailedDescription: [
+      '일반칠 위에 투명한 에폭시 코팅을 추가합니다',
+      '표면이 매끄럽고 광택이 나서 고급스럽습니다',
+      '코팅으로 인해 내구성이 향상됩니다',
+    ],
+    recommendation: '프리미엄 뱃지, 선물용, VIP 기념품',
+    image: '/badge-types/soft_enamel_epoxy.png',
     icon: '💧',
     color: 'from-cyan-400 to-blue-500',
     priceAddon: 300,
@@ -30,6 +44,13 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     id: 'hard_enamel',
     name: '수지칠',
     description: '반투명, 부드러운 색감',
+    detailedDescription: [
+      '표면을 연마하여 도금선과 색상이 같은 높이입니다',
+      '매끄러운 촉감과 고급스러운 외관을 제공합니다',
+      '반투명한 색감으로 부드러운 느낌을 줍니다',
+    ],
+    recommendation: '고급 브랜드 뱃지, 수집용, 한정판',
+    image: '/badge-types/hard_enamel.png',
     icon: '🌈',
     color: 'from-purple-400 to-pink-500',
     priceAddon: 500,
@@ -38,6 +59,13 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     id: 'printed',
     name: 'UV 인쇄',
     description: '사진/그라데이션 표현',
+    detailedDescription: [
+      '사진, 그라데이션, 복잡한 디자인 표현이 가능합니다',
+      'UV 잉크로 선명한 풀컬러 인쇄를 제공합니다',
+      '세밀한 디테일과 다양한 색상 표현에 적합합니다',
+    ],
+    recommendation: '캐릭터 뱃지, 포토 뱃지, 일러스트',
+    image: '/badge-types/printed.png',
     icon: '🖼️',
     color: 'from-rose-400 to-red-500',
     priceAddon: 0,
@@ -46,6 +74,13 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     id: '3d',
     name: '3D 입체',
     description: '양각으로 볼륨감',
+    detailedDescription: [
+      '입체적인 양각 디자인으로 볼륨감을 표현합니다',
+      '로고나 심볼을 돋보이게 하는데 효과적입니다',
+      '독특하고 인상적인 뱃지를 원할 때 추천합니다',
+    ],
+    recommendation: '브랜드 로고, 마스코트, 특별 기념품',
+    image: '/badge-types/3d.png',
     icon: '🏔️',
     color: 'from-emerald-400 to-teal-500',
     priceAddon: 500,
@@ -54,6 +89,13 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     id: 'die_struck',
     name: '칠없음',
     description: '금속 질감만 (무도색)',
+    detailedDescription: [
+      '색상 없이 금속 도금만으로 제작됩니다',
+      '클래식하고 고급스러운 느낌을 줍니다',
+      '심플한 로고나 텍스트 표현에 적합합니다',
+    ],
+    recommendation: '공식 뱃지, 클래식 디자인, 명패',
+    image: '/badge-types/die_struck.png',
     icon: '⚙️',
     color: 'from-gray-400 to-gray-600',
     priceAddon: 0,
@@ -62,6 +104,13 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     id: 'custom',
     name: '기타',
     description: '카카오톡 문의',
+    detailedDescription: [
+      '위 옵션에 없는 특별한 제작 방식을 원하시나요?',
+      '카카오톡으로 문의해주시면 상담해드립니다',
+      '야광, 글리터, 스톤 등 특수 효과도 가능합니다',
+    ],
+    recommendation: '특수 효과, 맞춤 제작',
+    image: '/badge-types/custom.png',
     icon: '💬',
     color: 'from-yellow-400 to-amber-500',
     priceAddon: 0,

@@ -4,10 +4,11 @@
  * 뱃지 종류 선택 컴포넌트
  * 
  * 일반칠, 에폭시, 수지칠, 칠없음, 3D 입체, UV인쇄, 기타 등의 뱃지 타입을 선택합니다.
- * 호버 시 툴팁으로 설명을 보여줍니다.
+ * 선택 시 하단에 상세 정보와 이미지를 표시합니다.
  */
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { PAINT_TYPES } from '@/constants/order'
 import type { PaintType } from '@/types/order'
 
@@ -19,6 +20,10 @@ interface PaintTypeSelectorProps {
 
 export default function PaintTypeSelector({ value, onChange, onCustomSelect }: PaintTypeSelectorProps) {
   const [hoveredType, setHoveredType] = useState<PaintType | null>(null)
+  const [imageError, setImageError] = useState<Record<string, boolean>>({})
+
+  // 현재 선택된 타입 정보
+  const selectedType = PAINT_TYPES.find(t => t.id === value)
 
   // 옵션 클릭 핸들러
   const handleClick = (typeId: PaintType, isCustom?: boolean) => {
@@ -27,7 +32,6 @@ export default function PaintTypeSelector({ value, onChange, onCustomSelect }: P
       if (onCustomSelect) {
         onCustomSelect()
       } else {
-        // 기본 동작: 카카오톡 채널 열기
         window.open('http://pf.kakao.com/_RHxjxdn/chat', '_blank')
       }
       return
@@ -63,8 +67,8 @@ export default function PaintTypeSelector({ value, onChange, onCustomSelect }: P
             }`}
           >
             {/* 그라데이션 아이콘 배경 */}
-            <div className={`w-14 h-14 mx-auto mb-3 rounded-xl bg-gradient-to-br ${type.color} 
-                            flex items-center justify-center text-2xl shadow-sm`}>
+            <div className={`w-12 h-12 mx-auto mb-2 rounded-xl bg-gradient-to-br ${type.color} 
+                            flex items-center justify-center text-xl shadow-sm`}>
               {type.icon}
             </div>
 
@@ -93,7 +97,6 @@ export default function PaintTypeSelector({ value, onChange, onCustomSelect }: P
                               bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-20
                               animate-tooltip-fade shadow-lg">
                 {type.description}
-                {/* 말풍선 화살표 */}
                 <div className="absolute top-full left-1/2 -translate-x-1/2 
                                 border-4 border-transparent border-t-gray-900" />
               </div>
@@ -110,9 +113,71 @@ export default function PaintTypeSelector({ value, onChange, onCustomSelect }: P
         ))}
       </div>
 
+      {/* 선택된 종류 상세 정보 */}
+      {selectedType && !selectedType.isCustom && (
+        <div className="mt-6 p-5 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-100">
+          <div className="flex flex-col sm:flex-row gap-5">
+            {/* 이미지 영역 */}
+            <div className="sm:w-40 flex-shrink-0">
+              <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-inner">
+                {selectedType.image && !imageError[selectedType.id] ? (
+                  <Image
+                    src={selectedType.image}
+                    alt={selectedType.name}
+                    fill
+                    className="object-cover"
+                    onError={() => setImageError(prev => ({ ...prev, [selectedType.id]: true }))}
+                  />
+                ) : (
+                  // Placeholder: 그라데이션 배경 + 아이콘
+                  <div className={`w-full h-full bg-gradient-to-br ${selectedType.color} 
+                                  flex items-center justify-center`}>
+                    <span className="text-5xl">{selectedType.icon}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 텍스트 정보 */}
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`w-8 h-8 rounded-lg bg-gradient-to-br ${selectedType.color} 
+                                flex items-center justify-center text-sm`}>
+                  {selectedType.icon}
+                </span>
+                <h3 className="font-bold text-lg">{selectedType.name}</h3>
+                {selectedType.priceAddon > 0 && (
+                  <span className="text-sm text-primary-600 font-medium">
+                    +₩{selectedType.priceAddon.toLocaleString()}
+                  </span>
+                )}
+              </div>
+
+              {/* 상세 설명 bullet points */}
+              <ul className="space-y-2 mb-4">
+                {selectedType.detailedDescription.map((desc, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
+                    <span className="text-primary-500 mt-0.5">✓</span>
+                    <span>{desc}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* 추천 용도 */}
+              <div className="flex items-center gap-2 text-sm">
+                <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
+                  💡 추천
+                </span>
+                <span className="text-gray-600">{selectedType.recommendation}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 안내 문구 */}
       <p className="text-xs text-gray-400 text-center mt-4">
-        💡 각 옵션에 마우스를 올리면 설명을 볼 수 있어요
+        💡 각 옵션에 마우스를 올리면 간단한 설명을 볼 수 있어요
       </p>
     </div>
   )
