@@ -5,7 +5,69 @@
  * Magic Number 사용을 피하기 위해 이 파일의 상수를 사용하세요.
  */
 
-import type { MetalColorOption, SizeOption, QuantityTier } from '@/types/order'
+import type { MetalColorOption, SizeOption, QuantityTier, PaintTypeOption } from '@/types/order'
+
+// 뱃지 종류 옵션 (7종류)
+// ⚠️ 이미지와 가격은 나중에 실제 값으로 교체 필요
+export const PAINT_TYPES: PaintTypeOption[] = [
+  {
+    id: 'normal',
+    name: '일반칠',
+    description: '가장 기본, 도금선 살짝 높음',
+    icon: '🖌️',
+    color: 'from-amber-400 to-orange-500',
+    priceAddon: 0,
+  },
+  {
+    id: 'normal_epoxy',
+    name: '일반칠 + 에폭시',
+    description: '투명 코팅으로 고급스러움',
+    icon: '💧',
+    color: 'from-cyan-400 to-blue-500',
+    priceAddon: 300,
+  },
+  {
+    id: 'resin',
+    name: '수지칠',
+    description: '반투명, 부드러운 색감',
+    icon: '🌈',
+    color: 'from-purple-400 to-pink-500',
+    priceAddon: 200,
+  },
+  {
+    id: 'no_paint',
+    name: '칠없음',
+    description: '금속 질감만 (무도색)',
+    icon: '⚙️',
+    color: 'from-gray-400 to-gray-600',
+    priceAddon: 0,
+  },
+  {
+    id: '3d',
+    name: '3D 입체',
+    description: '양각으로 볼륨감',
+    icon: '🏔️',
+    color: 'from-emerald-400 to-teal-500',
+    priceAddon: 500,
+  },
+  {
+    id: 'uv_print',
+    name: 'UV인쇄',
+    description: '사진/그라데이션 표현',
+    icon: '🖼️',
+    color: 'from-rose-400 to-red-500',
+    priceAddon: 400,
+  },
+  {
+    id: 'custom',
+    name: '기타',
+    description: '카카오톡 문의',
+    icon: '💬',
+    color: 'from-yellow-400 to-amber-500',
+    priceAddon: 0,
+    isCustom: true,
+  },
+]
 
 // 도금 색상 옵션 (8종류)
 export const METAL_COLORS: MetalColorOption[] = [

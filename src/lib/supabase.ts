@@ -93,11 +93,18 @@ export type UserDesign = {
 // 금형비
 export const MOLD_FEE = 90000
 
-// 가격 계산 유틸리티 - 칠 종류
-export const priceTable = {
+// 가격 계산 유틸리티 - 뱃지 종류별 추가 비용
+// ⚠️ 가격은 나중에 실제 값으로 교체 필요
+export const priceTable: Record<string, { base: number; addon: number; name: string }> = {
   'normal': { base: 3500, addon: 0, name: '일반칠' },
-  'epoxy': { base: 3500, addon: 0, name: '에폭시' },
-  'resin': { base: 3500, addon: 1000, name: '수지칠' },
+  'normal_epoxy': { base: 3500, addon: 300, name: '일반칠 + 에폭시' },
+  'resin': { base: 3500, addon: 200, name: '수지칠' },
+  'no_paint': { base: 3500, addon: 0, name: '칠없음' },
+  '3d': { base: 3500, addon: 500, name: '3D 입체' },
+  'uv_print': { base: 3500, addon: 400, name: 'UV인쇄' },
+  'custom': { base: 3500, addon: 0, name: '기타' }, // 별도 견적
+  // 기존 호환성 유지
+  'epoxy': { base: 3500, addon: 300, name: '에폭시' },
 }
 
 // 기존 paint_type 값에 대한 한글 변환 (마이그레이션 전 호환성)

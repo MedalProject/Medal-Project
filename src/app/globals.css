@@ -202,3 +202,19 @@ input:focus, select:focus, textarea:focus {
 .animate-highlight-fade {
   animation: highlight-fade 1.5s ease-out;
 }
+
+/* 툴팁 페이드 인 애니메이션 */
+@keyframes tooltip-fade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.animate-tooltip-fade {
+  animation: tooltip-fade 0.15s ease-out;
+}

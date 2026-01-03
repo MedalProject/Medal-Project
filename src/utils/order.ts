@@ -5,7 +5,7 @@
  * React state에 의존하지 않는 헬퍼 함수들만 포함합니다.
  */
 
-import { METAL_COLORS, SIZES } from '@/constants/order'
+import { METAL_COLORS, SIZES, PAINT_TYPES } from '@/constants/order'
 import { priceTable } from '@/lib/supabase'
 
 /**
@@ -18,12 +18,15 @@ export function getMetalColorName(colorId: string): string {
 }
 
 /**
- * 도장 타입을 한글 이름으로 변환
- * @param paintType - 도장 타입 ID (예: 'normal', 'soft', 'printing')
- * @returns 한글 도장명
+ * 뱃지 종류를 한글 이름으로 변환
+ * @param paintType - 뱃지 종류 ID (예: 'normal', 'resin', '3d')
+ * @returns 한글 종류명
  */
 export function getPaintTypeName(paintType: string): string {
-  return priceTable[paintType as keyof typeof priceTable]?.name || paintType
+  // PAINT_TYPES 상수에서 먼저 찾고, 없으면 priceTable에서 찾음
+  const paintTypeOption = PAINT_TYPES.find(p => p.id === paintType)
+  if (paintTypeOption) return paintTypeOption.name
+  return priceTable[paintType]?.name || paintType
 }
 
 /**

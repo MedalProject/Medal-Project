@@ -5,6 +5,27 @@
  * 다른 파일에서 import해서 사용하세요.
  */
 
+// 뱃지 종류 (칠 타입)
+export type PaintType = 
+  | 'normal'        // 일반칠
+  | 'normal_epoxy'  // 일반칠 + 에폭시
+  | 'resin'         // 수지칠
+  | 'no_paint'      // 칠없음
+  | '3d'            // 3D 입체
+  | 'uv_print'      // UV인쇄
+  | 'custom'        // 기타 (카카오톡 문의)
+
+// 뱃지 종류 옵션 타입
+export type PaintTypeOption = {
+  id: PaintType
+  name: string           // 표시 이름
+  description: string    // 툴팁 설명
+  icon: string           // 이모지 아이콘
+  color: string          // 배경 그라데이션 색상
+  priceAddon: number     // 추가 비용 (원)
+  isCustom?: boolean     // 기타 옵션 여부 (카카오톡 문의)
+}
+
 // 주문 항목 타입
 export type OrderItem = {
   id: string
