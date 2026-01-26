@@ -225,9 +225,31 @@ export default function CheckoutPage() {
     router.push(`/checkout/complete?${query.toString()}`)
   }
 
-  const startKcpPcPayment = (data: Extract<KcpRegisterResponse, { flow: 'pc' }>) => {
-    if (!kcpScriptReady) {
-      showToast('결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'error')
+  const waitForKcpScript = (maxWait = 5000): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (kcpScriptReady && window.KCP_Pay_Execute_Web) {
+        resolve(true)
+        return
+      }
+      
+      const startTime = Date.now()
+      const checkInterval = setInterval(() => {
+        if (kcpScriptReady && window.KCP_Pay_Execute_Web) {
+          clearInterval(checkInterval)
+          resolve(true)
+        } else if (Date.now() - startTime > maxWait) {
+          clearInterval(checkInterval)
+          resolve(false)
+        }
+      }, 100)
+    })
+  }
+
+  const startKcpPcPayment = async (data: Extract<KcpRegisterResponse, { flow: 'pc' }>) => {
+    // 스크립트 로딩 대기
+    const scriptLoaded = await waitForKcpScript()
+    if (!scriptLoaded) {
+      showToast('결제 모듈을 불러오지 못했습니다. 페이지를 새로고침해주세요.', 'error')
       return
     }
 
@@ -358,7 +380,7 @@ export default function CheckoutPage() {
       if (data.flow === 'mobile') {
         startKcpMobilePayment(data)
       } else {
-        startKcpPcPayment(data)
+        await startKcpPcPayment(data)
       }
     } catch (error) {
       console.error('Order error:', error)
@@ -412,7 +434,13 @@ export default function CheckoutPage() {
       <Script
         src="https://testspay.kcp.co.kr/plugin/kcp_spay_hub.js"
         strategy="afterInteractive"
-        onLoad={() => setKcpScriptReady(true)}
+        onLoad={() => {
+          console.log('KCP script loaded')
+          setKcpScriptReady(true)
+        }}
+        onError={(e) => {
+          console.error('KCP script load error:', e)
+        }}
       />
       {/* 다음 우편번호 API 스크립트 */}
       <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" async />
