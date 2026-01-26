@@ -17,8 +17,15 @@ export const KCP_TEST_ENV: KcpEnvironment = {
   pcScriptUrl: 'https://testspay.kcp.co.kr/plugin/kcp_spay_hub.js',
 }
 
+export const KCP_REAL_ENV: KcpEnvironment = {
+  registerUrl: 'https://smpay.kcp.co.kr/trade/register.do',
+  approveUrl: 'https://spl.kcp.co.kr/gw/enc/v1/payment',
+  pcScriptUrl: 'https://spay.kcp.co.kr/plugin/kcp_spay_hub.js',
+}
+
 export function getKcpEnvironment(): KcpEnvironment {
-  return KCP_TEST_ENV
+  // return KCP_TEST_ENV // 테스트용
+  return KCP_REAL_ENV // 실제용
 }
 
 export function normalizeMultilineEnv(value?: string): string {

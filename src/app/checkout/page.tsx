@@ -432,7 +432,8 @@ export default function CheckoutPage() {
   return (
     <>
       <Script
-        src="https://testspay.kcp.co.kr/plugin/kcp_spay_hub.js"
+        // src="https://testspay.kcp.co.kr/plugin/kcp_spay_hub.js"
+        src="https://spay.kcp.co.kr/plugin/kcp_spay_hub.js"
         strategy="afterInteractive"
         onLoad={() => {
           console.log('KCP script loaded')
