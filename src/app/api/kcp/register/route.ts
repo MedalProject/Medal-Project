@@ -65,6 +65,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'KCP 설정이 누락되었습니다.' }, { status: 500 })
     }
 
+    // 디버깅: site_cd 값 확인
+    console.log('KCP_SITE_CD:', process.env.KCP_SITE_CD)
+
     const supabase = await createServerSupabaseClient(request)
     const { data: { user } } = await supabase.auth.getUser()
 

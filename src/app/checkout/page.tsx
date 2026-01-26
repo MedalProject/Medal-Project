@@ -739,6 +739,8 @@ export default function CheckoutPage() {
       <form ref={kcpFormRef} method="post" style={{ display: 'none' }}>
         <input type="hidden" name="site_cd" value={kcpPayload?.flow === 'pc' ? kcpPayload.siteCd : ''} />
         <input type="hidden" name="site_name" value={KCP_SITE_NAME} />
+        {/* g_conf_js_url: 리얼 환경 URL (테스트: testspay.kcp.co.kr) */}
+        <input type="hidden" name="g_conf_js_url" value="https://spay.kcp.co.kr/plugin/kcp_spay_hub.js" />
         <input type="hidden" name="pay_method" value={kcpPayload?.flow === 'pc' ? kcpPayload.payMethod : ''} />
         <input type="hidden" name="ordr_idxx" value={kcpPayload?.flow === 'pc' ? kcpPayload.orderNumber : ''} />
         <input type="hidden" name="good_name" value={kcpPayload?.flow === 'pc' ? kcpPayload.goodName : ''} />
