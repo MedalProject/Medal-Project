@@ -745,6 +745,10 @@ export default function CheckoutPage() {
         <input type="hidden" name="ordr_idxx" value={kcpPayload?.flow === 'pc' ? kcpPayload.orderNumber : ''} />
         <input type="hidden" name="good_name" value={kcpPayload?.flow === 'pc' ? kcpPayload.goodName : ''} />
         <input type="hidden" name="good_mny" value={kcpPayload?.flow === 'pc' ? String(kcpPayload.amount) : ''} />
+        <input type="hidden" name="currency" value="410" />
+        <input type="hidden" name="buyr_name" value={shippingInfo.name} />
+        <input type="hidden" name="buyr_tel1" value={shippingInfo.phone} />
+        <input type="hidden" name="buyr_mail" value={user?.email || guestEmail} />
         <input type="hidden" name="Ret_URL" value={kcpPayload?.flow === 'pc' ? kcpPayload.retUrl : ''} />
         <input type="hidden" name="enc_data" />
         <input type="hidden" name="enc_info" />
