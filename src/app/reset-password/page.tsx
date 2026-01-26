@@ -269,9 +269,7 @@ function LoadingUI() {
       </div>
     </div>
   )
-}
-
-// 메인 페이지 컴포넌트 - Suspense로 감싸서 export
+}// 메인 페이지 컴포넌트 - Suspense로 감싸서 export
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={<LoadingUI />}>

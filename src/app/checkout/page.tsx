@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { createClient, calculatePrice, priceTable, calculateShippingFee, FREE_SHIPPING_THRESHOLD } from '@/lib/supabase'
@@ -12,6 +13,8 @@ const metalColors = [
   { id: 'gold', name: '금도금' },
   { id: 'silver', name: '은도금' },
 ]
+
+const KCP_SITE_NAME = 'HEYBADGE'
 
 // 다음 우편번호 API 타입 정의
 interface DaumPostcodeData {
@@ -33,6 +36,8 @@ declare global {
     daum?: {
       Postcode: DaumPostcode
     }
+    KCP_Pay_Execute_Web?: (form: HTMLFormElement) => void
+    m_Completepayment?: () => void
   }
 }
 
@@ -46,6 +51,29 @@ type CheckoutItem = {
   design_url: string | null
   design_name: string | null
 }
+
+type KcpRegisterResponse =
+  | {
+      flow: 'pc'
+      orderNumber: string
+      amount: number
+      siteCd: string
+      goodName: string
+      payMethod: string
+      retUrl: string
+      pcScriptUrl: string
+    }
+  | {
+      flow: 'mobile'
+      orderNumber: string
+      amount: number
+      siteCd: string
+      goodName: string
+      payMethod: string
+      approvalKey: string
+      payUrl: string
+      retUrl: string
+    }
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -76,10 +104,12 @@ export default function CheckoutPage() {
   // 결제 방법
   const [paymentMethod, setPaymentMethod] = useState('bank')
 
-  // 주문 완료 상태
-  const [orderComplete, setOrderComplete] = useState(false)
-  const [completedOrderNumber, setCompletedOrderNumber] = useState('')
-  const [completedEmail, setCompletedEmail] = useState('')
+  // KCP 결제 관련
+  const kcpFormRef = useRef<HTMLFormElement>(null)
+  const kcpMobileFormRef = useRef<HTMLFormElement>(null)
+  const [kcpPayload, setKcpPayload] = useState<KcpRegisterResponse | null>(null)
+  const [kcpScriptReady, setKcpScriptReady] = useState(false)
+
 
   useEffect(() => {
     const loadCheckoutData = async () => {
@@ -136,6 +166,11 @@ export default function CheckoutPage() {
     setTimeout(() => setToast(''), 3000)
   }
 
+  const isMobileDevice = () => {
+    if (typeof navigator === 'undefined') return false
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  }
+
   // 주소 검색 (다음 우편번호 API)
   const handleAddressSearch = () => {
     if (typeof window !== 'undefined' && window.daum) {
@@ -183,6 +218,92 @@ export default function CheckoutPage() {
     return true
   }
 
+  const handlePaymentSuccess = (orderNumber: string, email?: string | null) => {
+    localStorage.removeItem('tempCheckoutItems')
+    const query = new URLSearchParams({ orderNumber })
+    if (email) query.set('email', email)
+    router.push(`/checkout/complete?${query.toString()}`)
+  }
+
+  const startKcpPcPayment = (data: Extract<KcpRegisterResponse, { flow: 'pc' }>) => {
+    if (!kcpScriptReady) {
+      showToast('결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'error')
+      return
+    }
+
+    setKcpPayload(data)
+    setTimeout(() => {
+      if (kcpFormRef.current && window.KCP_Pay_Execute_Web) {
+        window.KCP_Pay_Execute_Web(kcpFormRef.current)
+      } else {
+        showToast('결제창 호출에 실패했습니다.', 'error')
+      }
+    }, 0)
+  }
+
+  const startKcpMobilePayment = (data: Extract<KcpRegisterResponse, { flow: 'mobile' }>) => {
+    setKcpPayload(data)
+    setTimeout(() => {
+      const form = kcpMobileFormRef.current
+      if (!form) {
+        showToast('모바일 결제창 호출에 실패했습니다.', 'error')
+        return
+      }
+      const payUrl = data.payUrl
+      form.action = `${payUrl.substring(0, payUrl.lastIndexOf('/'))}/jsp/encodingFilter/encodingFilter.jsp`
+      form.submit()
+    }, 0)
+  }
+
+  useEffect(() => {
+    if (!kcpPayload || kcpPayload.flow !== 'pc') return
+
+    window.m_Completepayment = async () => {
+      try {
+        const form = kcpFormRef.current
+        if (!form) {
+          showToast('결제 결과를 확인할 수 없습니다.', 'error')
+          return
+        }
+        const encData = (form.querySelector('input[name="enc_data"]') as HTMLInputElement)?.value
+        const encInfo = (form.querySelector('input[name="enc_info"]') as HTMLInputElement)?.value
+        const tranCd = (form.querySelector('input[name="tran_cd"]') as HTMLInputElement)?.value
+
+        if (!encData || !encInfo) {
+          showToast('결제 인증값이 없습니다.', 'error')
+          return
+        }
+
+        const response = await fetch('/api/kcp/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            orderNumber: kcpPayload.orderNumber,
+            enc_data: encData,
+            enc_info: encInfo,
+            tran_cd: tranCd || '00100000',
+          }),
+        })
+
+        const result = await response.json()
+        if (!response.ok) {
+          showToast(result?.error || '결제 승인에 실패했습니다.', 'error')
+          return
+        }
+
+        handlePaymentSuccess(result.orderNumber, result.email)
+      } catch (error) {
+        console.error('KCP approve error:', error)
+        showToast('결제 승인 처리 중 오류가 발생했습니다.', 'error')
+      }
+    }
+
+    return () => {
+      delete window.m_Completepayment
+    }
+  }, [kcpPayload])
+
   // 폼 유효성 검사
   const isFormValid = () => {
     // 비회원 이메일 검증
@@ -215,76 +336,35 @@ export default function CheckoutPage() {
     setSubmitting(true)
 
     try {
-      // 주문할 이메일 결정 (회원: user.email, 비회원: guestEmail)
-      const orderEmail = user ? user.email : guestEmail
-      let lastOrderNumber = ''
+      const response = await fetch('/api/kcp/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          items,
+          shippingInfo,
+          paymentMethod,
+          guestEmail: user ? user.email : guestEmail,
+          isMobile: isMobileDevice(),
+        }),
+      })
 
-      for (const item of items) {
-        const orderNumber = `HB${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
-        lastOrderNumber = orderNumber
-        const itemPrice = calculatePrice(item.paint_type, item.size, item.quantity)
-
-        // 주문 데이터 생성
-        const orderData = {
-          user_id: user ? user.id : null,  // 비회원은 null
-          guest_email: user ? null : guestEmail,  // 회원은 null
-          order_number: orderNumber,
-          paint_type: item.paint_type,
-          metal_color: item.metal_color,
-          size: item.size,
-          quantity: item.quantity,
-          design_url: item.design_url,
-          design_name: item.design_name,
-          unit_price: itemPrice.unitPrice,
-          discount_amount: itemPrice.discount,
-          total_price: itemPrice.total,
-          status: 'pending',
-          // 배송지 정보
-          shipping_name: shippingInfo.name,
-          shipping_phone: shippingInfo.phone,
-          shipping_zonecode: shippingInfo.zonecode,
-          shipping_address: shippingInfo.address,
-          shipping_address_detail: shippingInfo.addressDetail,
-          shipping_memo: shippingInfo.memo,
-          payment_method: paymentMethod,
-        }
-
-        const { error } = await supabase.from('orders').insert(orderData)
-
-        if (error) throw error
+      const data = (await response.json()) as KcpRegisterResponse
+      if (!response.ok) {
+        showToast(data?.error || '결제 요청에 실패했습니다.', 'error')
+        return
       }
 
-      // 회원인 경우 장바구니 비우기
-      if (user) {
-        await supabase
-          .from('cart_items')
-          .delete()
-          .eq('user_id', user.id)
+      if (data.flow === 'mobile') {
+        startKcpMobilePayment(data)
+      } else {
+        startKcpPcPayment(data)
       }
-
-      // localStorage 임시 데이터 삭제
-      localStorage.removeItem('tempCheckoutItems')
-
-      // 주문 완료 상태로 전환
-      setOrderComplete(true)
-      setCompletedOrderNumber(lastOrderNumber)
-      setCompletedEmail(orderEmail || '')
-
     } catch (error) {
       console.error('Order error:', error)
-      showToast('주문 중 오류가 발생했습니다.', 'error')
+      showToast('결제 요청 중 오류가 발생했습니다.', 'error')
     } finally {
       setSubmitting(false)
-    }
-  }
-
-  // 주문번호 복사
-  const handleCopyOrderNumber = async () => {
-    try {
-      await navigator.clipboard.writeText(completedOrderNumber)
-      showToast('주문번호가 복사되었습니다!')
-    } catch {
-      showToast('복사에 실패했습니다.', 'error')
     }
   }
 
@@ -297,88 +377,6 @@ export default function CheckoutPage() {
           <div className="max-w-4xl mx-auto text-center py-20">
             <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-500">주문 정보를 불러오는 중...</p>
-          </div>
-        </main>
-      </>
-    )
-  }
-
-  // 주문 완료 화면
-  if (orderComplete) {
-    return (
-      <>
-        <Header />
-        <main className="pt-24 pb-16 px-4 bg-gray-50 min-h-screen">
-          <div className="max-w-lg mx-auto">
-            <div className="bg-white rounded-3xl p-8 shadow-sm text-center">
-              {/* 완료 아이콘 */}
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
-                ✅
-              </div>
-
-              <h1 className="text-2xl font-bold mb-2">주문이 완료되었습니다!</h1>
-              <p className="text-gray-500 mb-8">
-                아래 주문번호로 주문 상태를 확인하실 수 있습니다.
-              </p>
-
-              {/* 주문번호 */}
-              <div className="bg-gray-50 rounded-2xl p-6 mb-6">
-                <p className="text-sm text-gray-500 mb-2">주문번호</p>
-                <div className="flex items-center justify-center gap-3">
-                  <span className="font-display text-2xl font-bold text-primary-600">
-                    {completedOrderNumber}
-                  </span>
-                  <button
-                    onClick={handleCopyOrderNumber}
-                    className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    📋 복사
-                  </button>
-                </div>
-              </div>
-
-              {/* 이메일 안내 */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8 text-left">
-                <p className="text-sm text-blue-800">
-                  <strong>📧 {completedEmail}</strong>으로<br />
-                  주문 확인 안내를 보내드렸습니다.
-                </p>
-                <p className="text-xs text-blue-600 mt-2">
-                  ⚠️ 주문번호를 꼭 저장해주세요! 주문 조회 시 필요합니다.
-                </p>
-              </div>
-
-              {/* 액션 버튼들 */}
-              <div className="space-y-3">
-                <Link
-                  href="/order-lookup"
-                  className="block w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all text-center"
-                >
-                  주문 조회하기
-                </Link>
-
-                {!user && (
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="text-sm text-gray-500 mb-3">
-                      💡 회원가입하시면 주문 내역이 자동으로 저장됩니다!
-                    </p>
-                    <Link
-                      href="/signup"
-                      className="block w-full py-3 bg-white border-2 border-primary-500 text-primary-600 rounded-xl font-bold hover:bg-primary-50 transition-colors text-center"
-                    >
-                      회원가입하기 (30초)
-                    </Link>
-                  </div>
-                )}
-
-                <Link
-                  href="/"
-                  className="block text-gray-500 hover:text-gray-700 text-sm py-2"
-                >
-                  ← 홈으로 돌아가기
-                </Link>
-              </div>
-            </div>
           </div>
         </main>
       </>
@@ -411,6 +409,11 @@ export default function CheckoutPage() {
 
   return (
     <>
+      <Script
+        src="https://testspay.kcp.co.kr/plugin/kcp_spay_hub.js"
+        strategy="afterInteractive"
+        onLoad={() => setKcpScriptReady(true)}
+      />
       {/* 다음 우편번호 API 스크립트 */}
       <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" async />
       
@@ -592,12 +595,10 @@ export default function CheckoutPage() {
                   결제 방법
                 </h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
                   {[
                     { id: 'bank', name: '계좌이체', icon: '🏦' },
                     { id: 'card', name: '신용카드', icon: '💳' },
-                    { id: 'kakao', name: '카카오페이', icon: '💛' },
-                    { id: 'naver', name: '네이버페이', icon: '💚' },
                   ].map((method) => (
                     <button
                       key={method.id}
@@ -617,17 +618,6 @@ export default function CheckoutPage() {
                     </button>
                   ))}
                 </div>
-
-                {paymentMethod === 'bank' && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-xl">
-                    <p className="text-sm text-blue-800">
-                      <strong>입금 계좌:</strong> 신한은행 110-123-456789 (예금주: 헤이뱃지)
-                    </p>
-                    <p className="text-sm text-blue-600 mt-1">
-                      주문 후 24시간 이내 입금해주세요.
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -715,6 +705,37 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
+
+      {/* KCP PC 결제용 폼 */}
+      <form ref={kcpFormRef} method="post" style={{ display: 'none' }}>
+        <input type="hidden" name="site_cd" value={kcpPayload?.flow === 'pc' ? kcpPayload.siteCd : ''} />
+        <input type="hidden" name="site_name" value={KCP_SITE_NAME} />
+        <input type="hidden" name="pay_method" value={kcpPayload?.flow === 'pc' ? kcpPayload.payMethod : ''} />
+        <input type="hidden" name="ordr_idxx" value={kcpPayload?.flow === 'pc' ? kcpPayload.orderNumber : ''} />
+        <input type="hidden" name="good_name" value={kcpPayload?.flow === 'pc' ? kcpPayload.goodName : ''} />
+        <input type="hidden" name="good_mny" value={kcpPayload?.flow === 'pc' ? String(kcpPayload.amount) : ''} />
+        <input type="hidden" name="Ret_URL" value={kcpPayload?.flow === 'pc' ? kcpPayload.retUrl : ''} />
+        <input type="hidden" name="enc_data" />
+        <input type="hidden" name="enc_info" />
+        <input type="hidden" name="tran_cd" />
+      </form>
+
+      {/* KCP 모바일 결제용 폼 */}
+      <form ref={kcpMobileFormRef} method="post" style={{ display: 'none' }}>
+        <input type="hidden" name="site_cd" value={kcpPayload?.flow === 'mobile' ? kcpPayload.siteCd : ''} />
+        <input type="hidden" name="pay_method" value={kcpPayload?.flow === 'mobile' ? kcpPayload.payMethod : ''} />
+        <input type="hidden" name="currency" value="410" />
+        <input type="hidden" name="shop_name" value={KCP_SITE_NAME} />
+        <input type="hidden" name="Ret_URL" value={kcpPayload?.flow === 'mobile' ? kcpPayload.retUrl : ''} />
+        <input type="hidden" name="approval_key" value={kcpPayload?.flow === 'mobile' ? kcpPayload.approvalKey : ''} />
+        <input type="hidden" name="PayUrl" value={kcpPayload?.flow === 'mobile' ? kcpPayload.payUrl : ''} />
+        <input type="hidden" name="ordr_idxx" value={kcpPayload?.flow === 'mobile' ? kcpPayload.orderNumber : ''} />
+        <input type="hidden" name="good_name" value={kcpPayload?.flow === 'mobile' ? kcpPayload.goodName : ''} />
+        <input type="hidden" name="good_mny" value={kcpPayload?.flow === 'mobile' ? String(kcpPayload.amount) : ''} />
+        <input type="hidden" name="buyr_name" value={shippingInfo.name} />
+        <input type="hidden" name="buyr_tel2" value={shippingInfo.phone} />
+        <input type="hidden" name="buyr_mail" value={user?.email || guestEmail} />
+      </form>
 
       {/* Toast */}
       {toast && (

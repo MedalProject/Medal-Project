@@ -148,7 +148,7 @@ export function calculatePrice(
   size: number,
   quantity: number
 ): { unitPrice: number; discount: number; total: number; discountPerUnit: number; sizeAddonPrice: number } {
-  const typePrice = priceTable[paintType as keyof typeof priceTable] || priceTable['normal']
+  const typePrice = priceTable[paintType as keyof typeof priceTable] || priceTable['soft_enamel']
   const sizeAddonPrice = sizeAddon[size] || 0
   const baseUnitPrice = typePrice.base + typePrice.addon + sizeAddonPrice
 
