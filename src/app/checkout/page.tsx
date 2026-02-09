@@ -105,7 +105,7 @@ export default function CheckoutPage() {
   })
 
   // 결제 방법
-  const [paymentMethod, setPaymentMethod] = useState('bank')
+  const [paymentMethod, setPaymentMethod] = useState('card')
 
   // KCP 결제 관련
   const kcpFormRef = useRef<HTMLFormElement>(null)
@@ -669,28 +669,11 @@ export default function CheckoutPage() {
                   결제 방법
                 </h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
-                  {[
-                    { id: 'bank', name: '계좌이체', icon: '🏦' },
-                    { id: 'card', name: '신용카드', icon: '💳' },
-                  ].map((method) => (
-                    <button
-                      key={method.id}
-                      onClick={() => setPaymentMethod(method.id)}
-                      className={`p-4 rounded-xl border-2 text-center transition-all ${
-                        paymentMethod === method.id
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="text-2xl mb-1">{method.icon}</div>
-                      <div className={`text-sm font-medium ${
-                        paymentMethod === method.id ? 'text-primary-600' : 'text-gray-600'
-                      }`}>
-                        {method.name}
-                      </div>
-                    </button>
-                  ))}
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="p-4 rounded-xl border-2 border-primary-500 bg-primary-50 text-center">
+                    <div className="text-2xl mb-1">💳</div>
+                    <div className="text-sm font-medium text-primary-600">신용카드</div>
+                  </div>
                 </div>
               </div>
             </div>
