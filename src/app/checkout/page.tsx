@@ -112,6 +112,7 @@ export default function CheckoutPage() {
   const kcpMobileFormRef = useRef<HTMLFormElement>(null)
   const [kcpPayload, setKcpPayload] = useState<KcpRegisterResponse | null>(null)
   const [kcpScriptReady, setKcpScriptReady] = useState(false)
+  const [shouldExecutePayment, setShouldExecutePayment] = useState(false)
 
 
   useEffect(() => {
@@ -265,15 +266,23 @@ export default function CheckoutPage() {
       })
     }
 
+    // 상태 업데이트 후 useEffect에서 KCP 결제창 호출
     setKcpPayload(data)
-    setTimeout(() => {
-      if (kcpFormRef.current && window.KCP_Pay_Execute_Web) {
-        window.KCP_Pay_Execute_Web(kcpFormRef.current)
-      } else {
-        showToast('결제창 호출에 실패했습니다.', 'error')
-      }
-    }, 0)
+    setShouldExecutePayment(true)
   }
+
+  // kcpPayload가 폼에 반영된 후 결제창 호출
+  useEffect(() => {
+    if (!shouldExecutePayment || !kcpPayload || kcpPayload.flow !== 'pc') return
+
+    setShouldExecutePayment(false)
+
+    if (kcpFormRef.current && window.KCP_Pay_Execute_Web) {
+      window.KCP_Pay_Execute_Web(kcpFormRef.current)
+    } else {
+      showToast('결제창 호출에 실패했습니다.', 'error')
+    }
+  }, [shouldExecutePayment, kcpPayload])
 
   const startKcpMobilePayment = (data: Extract<KcpRegisterResponse, { flow: 'mobile' }>) => {
     setKcpPayload(data)
