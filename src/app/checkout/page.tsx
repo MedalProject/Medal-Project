@@ -256,6 +256,15 @@ export default function CheckoutPage() {
       return
     }
 
+    // 이전 결제 세션의 잔여 데이터 초기화
+    if (kcpFormRef.current) {
+      const fieldsToReset = ['res_cd', 'res_msg', 'enc_data', 'enc_info', 'tran_cd']
+      fieldsToReset.forEach(name => {
+        const input = kcpFormRef.current?.querySelector(`input[name="${name}"]`) as HTMLInputElement
+        if (input) input.value = ''
+      })
+    }
+
     setKcpPayload(data)
     setTimeout(() => {
       if (kcpFormRef.current && window.KCP_Pay_Execute_Web) {
