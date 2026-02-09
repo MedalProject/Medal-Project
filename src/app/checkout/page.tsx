@@ -37,7 +37,10 @@ declare global {
       Postcode: DaumPostcode
     }
     KCP_Pay_Execute_Web?: (form: HTMLFormElement) => void
-    m_Completepayment?: () => void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    GetField?: (form: HTMLFormElement, data: any) => void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    m_Completepayment?: (FormOrJson: any, closeEvent: () => void) => void
   }
 }
 
@@ -280,19 +283,43 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!kcpPayload || kcpPayload.flow !== 'pc') return
 
-    window.m_Completepayment = async () => {
+    // KCP 문서 기준: m_Completepayment(FormOrJson, closeEvent)
+    // - GetField()로 폼에 인증 데이터를 세팅
+    // - res_cd == "0000" 일 때만 승인 진행
+    // - 실패 시 closeEvent()로 결제창 닫기
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    window.m_Completepayment = async (FormOrJson: any, closeEvent: () => void) => {
       try {
         const form = kcpFormRef.current
         if (!form) {
           showToast('결제 결과를 확인할 수 없습니다.', 'error')
+          if (closeEvent) closeEvent()
           return
         }
+
+        // GetField: KCP JS가 제공하는 함수로, FormOrJson 데이터를 form에 세팅
+        if (window.GetField) {
+          window.GetField(form, FormOrJson)
+        }
+
+        // res_cd 확인 (결제 인증 결과)
+        const resCd = (form.querySelector('input[name="res_cd"]') as HTMLInputElement)?.value
+        const resMsg = (form.querySelector('input[name="res_msg"]') as HTMLInputElement)?.value
+
+        if (resCd !== '0000') {
+          alert('[' + resCd + '] ' + resMsg)
+          if (closeEvent) closeEvent()
+          return
+        }
+
+        // 인증 성공 시 승인 요청
         const encData = (form.querySelector('input[name="enc_data"]') as HTMLInputElement)?.value
         const encInfo = (form.querySelector('input[name="enc_info"]') as HTMLInputElement)?.value
         const tranCd = (form.querySelector('input[name="tran_cd"]') as HTMLInputElement)?.value
 
         if (!encData || !encInfo) {
           showToast('결제 인증값이 없습니다.', 'error')
+          if (closeEvent) closeEvent()
           return
         }
 
@@ -735,24 +762,32 @@ export default function CheckoutPage() {
         </div>
       </main>
 
-      {/* KCP PC 결제용 폼 */}
-      <form ref={kcpFormRef} method="post" style={{ display: 'none' }}>
+      {/* KCP PC 결제용 폼 (문서 3.5.2 기준) */}
+      <form ref={kcpFormRef} name="order_info" method="post" style={{ display: 'none' }}>
+        {/* 필수 파라미터 */}
         <input type="hidden" name="site_cd" value={kcpPayload?.flow === 'pc' ? kcpPayload.siteCd : ''} />
         <input type="hidden" name="site_name" value={KCP_SITE_NAME} />
-        {/* g_conf_js_url: 리얼 환경 URL (테스트: testspay.kcp.co.kr) */}
-        <input type="hidden" name="g_conf_js_url" value="https://spay.kcp.co.kr/plugin/kcp_spay_hub.js" />
         <input type="hidden" name="pay_method" value={kcpPayload?.flow === 'pc' ? kcpPayload.payMethod : ''} />
+        <input type="hidden" name="currency" value="WON" />
         <input type="hidden" name="ordr_idxx" value={kcpPayload?.flow === 'pc' ? kcpPayload.orderNumber : ''} />
         <input type="hidden" name="good_name" value={kcpPayload?.flow === 'pc' ? kcpPayload.goodName : ''} />
         <input type="hidden" name="good_mny" value={kcpPayload?.flow === 'pc' ? String(kcpPayload.amount) : ''} />
-        <input type="hidden" name="currency" value="410" />
+        <input type="hidden" name="good_expr" value="0" />
+        <input type="hidden" name="shop_user_id" value={user?.id || guestEmail || ''} />
+        {/* 주문자 정보 */}
         <input type="hidden" name="buyr_name" value={shippingInfo.name} />
-        <input type="hidden" name="buyr_tel1" value={shippingInfo.phone} />
+        <input type="hidden" name="buyr_tel2" value={shippingInfo.phone} />
         <input type="hidden" name="buyr_mail" value={user?.email || guestEmail} />
+        {/* KCP 결제창 스크립트 URL (리얼/테스트 구분) */}
+        <input type="hidden" name="g_conf_js_url" value="https://spay.kcp.co.kr/plugin/kcp_spay_hub.js" />
+        {/* Ret_URL - PC에서는 m_Completepayment 콜백으로 처리하지만 폼에 포함 */}
         <input type="hidden" name="Ret_URL" value={kcpPayload?.flow === 'pc' ? kcpPayload.retUrl : ''} />
-        <input type="hidden" name="enc_data" />
-        <input type="hidden" name="enc_info" />
-        <input type="hidden" name="tran_cd" />
+        {/* KCP 결제창에서 세팅되는 인증 결과 필드 */}
+        <input type="hidden" name="res_cd" value="" />
+        <input type="hidden" name="res_msg" value="" />
+        <input type="hidden" name="enc_data" value="" />
+        <input type="hidden" name="enc_info" value="" />
+        <input type="hidden" name="tran_cd" value="" />
       </form>
 
       {/* KCP 모바일 결제용 폼 */}
