@@ -5,8 +5,8 @@
 @tailwind utilities;
 
 :root {
-  --primary: #0064FF;
-  --primary-dark: #0052d4;
+  --primary: #F59E0B;
+  --primary-dark: #D97706;
 }
 
 body {
@@ -29,8 +29,8 @@ body {
 
 /* 버튼 글로우 효과 */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 4px 15px rgba(0, 100, 255, 0.4); }
-  50% { box-shadow: 0 4px 30px rgba(0, 100, 255, 0.6); }
+  0%, 100% { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 4px 30px rgba(245, 158, 11, 0.6); }
 }
 
 .btn-glow {
@@ -39,7 +39,7 @@ body {
 
 /* 그라디언트 텍스트 */
 .gradient-text {
-  background: linear-gradient(135deg, #0064FF 0%, #3b82f6 50%, #60a5fa 100%);
+  background: linear-gradient(135deg, #D97706 0%, #F59E0B 50%, #FBBF24 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

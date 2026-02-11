@@ -82,13 +82,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/order"
-                className="px-8 py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/40 hover:-translate-y-1 transition-all btn-glow"
+                className="px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-2xl font-bold text-lg shadow-xl shadow-amber-500/30 hover:shadow-2xl hover:shadow-amber-500/40 hover:-translate-y-1 transition-all btn-glow"
               >
                 지금 만들어보기 →
               </Link>
               <Link
                 href="/gallery"
-                className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl font-bold text-lg hover:border-primary-500 hover:text-primary-600 transition-all"
+                className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl font-bold text-lg hover:border-amber-500 hover:text-amber-600 transition-all"
               >
                 제작 사례 보기
               </Link>
@@ -101,7 +101,7 @@ export default function Home() {
               {/* 메인 메달 이미지 - 배경 투명 효과 */}
               <div className="relative w-80 h-52 sm:w-[450px] sm:h-72 lg:w-[550px] lg:h-80 badge-float">
                 <Image
-                  src="/hero/hero_badge03.png"
+                  src="/hero/hero_medal.png"
                   alt="메달프로젝트 실제 제작 사례"
                   fill
                   className="object-contain"
@@ -131,7 +131,7 @@ export default function Home() {
                 icon: '🎯',
                 title: '1개부터 주문',
                 desc: '최소 주문량 걱정 없이 1개부터 원하는 만큼만 주문하세요',
-                color: 'from-primary-500/20 to-blue-400/20',
+                color: 'from-amber-500/20 to-yellow-400/20',
               },
               {
                 icon: '💰',
@@ -149,7 +149,7 @@ export default function Home() {
                 icon: '⚡',
                 title: '20일 이내 발송',
                 desc: '국내 제작으로 빠르고 안전하게 받아보세요',
-                color: 'from-blue-500/20 to-blue-400/20',
+                color: 'from-yellow-500/20 to-amber-400/20',
               },
             ].map((feature, i) => (
               <div
@@ -186,7 +186,7 @@ export default function Home() {
                 icon: '📤',
                 title: '디자인 업로드',
                 desc: 'AI 파일을 업로드하면 바로 미리보기가 가능해요',
-                color: 'from-blue-500 to-cyan-500',
+                color: 'from-amber-500 to-yellow-500',
               },
               {
                 step: '02',
@@ -235,8 +235,8 @@ export default function Home() {
 
           {/* 추가 안내 */}
           <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary-50 rounded-full">
-              <span className="text-primary-600 font-medium">💡 회원가입 없이도 바로 주문 가능해요!</span>
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-amber-50 rounded-full">
+              <span className="text-amber-700 font-medium">💡 회원가입 없이도 바로 주문 가능해요!</span>
             </div>
           </div>
         </div>
@@ -282,7 +282,7 @@ export default function Home() {
                         <p className="font-semibold text-gray-900">{review.name}</p>
                         <p className="text-sm text-gray-500">{review.company}</p>
                       </div>
-                      <span className="px-3 py-1 bg-primary-50 text-primary-600 text-xs font-medium rounded-full">
+                      <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-full">
                         {review.badge}
                       </span>
                     </div>
@@ -320,7 +320,7 @@ export default function Home() {
                         <p className="font-semibold text-gray-900">{review.name}</p>
                         <p className="text-sm text-gray-500">{review.company}</p>
                       </div>
-                      <span className="px-3 py-1 bg-primary-50 text-primary-600 text-xs font-medium rounded-full">
+                      <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-full">
                         {review.badge}
                       </span>
                     </div>
@@ -328,114 +328,6 @@ export default function Home() {
                 ))}
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Official Partners Section */}
-      <section className="py-16 sm:py-24 px-4 bg-gradient-to-b from-gray-900 to-gray-800 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl" />
-        
-        <div className="max-w-7xl mx-auto relative">
-          <div className="text-center mb-12 sm:mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 rounded-full text-amber-400 text-sm font-medium mb-6">
-              <span>🏆</span>
-              <span>OFFICIAL PARTNERSHIP</span>
-            </div>
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-4">
-              올림픽이 선택한 품질
-            </h2>
-            <p className="text-gray-400 text-lg">
-              글로벌 공식 제작 경험으로, 당신의 브랜드도 '기념'이 되게 만듭니다.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* 파리 올림픽 메달 */}
-            <div className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-700 hover:border-amber-500/50 transition-all duration-300">
-              <div className="absolute top-4 right-4">
-                <span className="px-3 py-1 bg-amber-500 text-gray-900 text-xs font-bold rounded-full">
-                  OFFICIAL
-                </span>
-              </div>
-              
-              <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-gray-700">
-                <Image
-                  src="/reveiw_samsung01.jpg"
-                  alt="2024 파리 올림픽 삼성 공식 메달"
-                  width={400}
-                  height={400}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🇫🇷</span>
-                  <span className="text-amber-400 font-semibold">Paris 2024</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white">
-                  2024 파리 올림픽<br />
-                  삼성전자 공식 기념 메달
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  SAMSUNG × Olympic Games Paris 2024
-                </p>
-              </div>
-            </div>
-
-            {/* 평창 유스 올림픽 메달 */}
-            <div className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-700 hover:border-amber-500/50 transition-all duration-300">
-              <div className="absolute top-4 right-4">
-                <span className="px-3 py-1 bg-amber-500 text-gray-900 text-xs font-bold rounded-full">
-                  OFFICIAL
-                </span>
-              </div>
-              
-              <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-gray-700">
-                <Image
-                  src="/reveiw_samsung02.jpg"
-                  alt="2024 평창 유스 올림픽 삼성 공식 메달"
-                  width={400}
-                  height={400}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🇰🇷</span>
-                  <span className="text-amber-400 font-semibold">Gangwon 2024</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white">
-                  2024 강원 동계 유스 올림픽<br />
-                  삼성전자 공식 기념 메달
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  SAMSUNG × Winter Youth Olympic Games 2024
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 신뢰 배지 */}
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-6 sm:gap-10">
-            <div className="text-center">
-              <p className="text-3xl sm:text-4xl font-bold text-white mb-1">500+</p>
-              <p className="text-gray-500 text-sm">기업 고객</p>
-            </div>
-            <div className="w-px h-12 bg-gray-700 hidden sm:block" />
-            <div className="text-center">
-              <p className="text-3xl sm:text-4xl font-bold text-white mb-1">50,000+</p>
-              <p className="text-gray-500 text-sm">누적 제작 수량</p>
-            </div>
-            <div className="w-px h-12 bg-gray-700 hidden sm:block" />
-            <div className="text-center">
-              <p className="text-3xl sm:text-4xl font-bold text-white mb-1">99%</p>
-              <p className="text-gray-500 text-sm">고객 만족도</p>
-            </div>
           </div>
         </div>
       </section>
@@ -512,7 +404,7 @@ export default function Home() {
               더 궁금한 점이 있으신가요?{' '}
               <a
                 href="mailto:hello.medalproject@gmail.com"
-                className="text-primary-600 font-medium hover:underline"
+                className="text-amber-600 font-medium hover:underline"
               >
                 hello.medalproject@gmail.com
               </a>
@@ -523,17 +415,17 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-24 px-4 bg-gradient-to-br from-primary-600 to-blue-600">
+      <section className="py-16 sm:py-24 px-4 bg-gradient-to-br from-amber-500 to-yellow-500">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-6">
             지금 바로 시작하세요
           </h2>
-          <p className="text-primary-100 text-lg mb-10">
+          <p className="text-amber-100 text-lg mb-10">
             회원가입 없이도 바로 디자인을 시작할 수 있습니다
           </p>
           <Link
             href="/order"
-            className="inline-block px-10 py-5 bg-white text-primary-600 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
+            className="inline-block px-10 py-5 bg-white text-amber-600 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
           >
             나만의 메달 만들기 →
           </Link>
@@ -554,7 +446,7 @@ export default function Home() {
         <div className="bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
           <Link
             href="/order"
-            className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 active:scale-[0.98] transition-transform"
+            className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-amber-500/30 active:scale-[0.98] transition-transform"
           >
             <span>⚡</span>
             <span>지금 만들어보기</span>
@@ -569,13 +461,10 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-between items-start gap-8 mb-6">
             <div>
               <div className="mb-4">
-                <Image
-                  src="/logo.png"
-                  alt="메달프로젝트"
-                  width={120}
-                  height={40}
-                  className="h-10 w-auto brightness-0 invert"
-                />
+                <span className="font-display text-2xl font-extrabold tracking-tight">
+                  <span className="text-amber-400">Medal</span>
+                  <span className="text-white"> Project</span>
+                </span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
                 글로벌 기업이 선택한 메달 제작 서비스

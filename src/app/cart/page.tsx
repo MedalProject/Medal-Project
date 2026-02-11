@@ -198,7 +198,7 @@ export default function CartPage() {
               <p className="text-gray-500 mb-8">원하는 메달을 장바구니에 담아보세요!</p>
               <Link
                 href="/order"
-                className="inline-block px-8 py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
+                className="inline-block px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
               >
                 메달 만들러 가기 →
               </Link>
@@ -311,7 +311,7 @@ export default function CartPage() {
                   <button
                     onClick={handleOrderAll}
                     disabled={ordering}
-                    className="w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                    className="w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-amber-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
                   >
                     {ordering ? '주문 처리 중...' : `${cartItems.length}건 주문하기`}
                   </button>

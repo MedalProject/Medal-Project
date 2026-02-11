@@ -68,7 +68,7 @@ function CheckoutCompleteContent() {
           <div className="space-y-3">
             <Link
               href="/order-lookup"
-              className="block w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all text-center"
+              className="block w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-amber-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all text-center"
             >
               주문 조회하기
             </Link>

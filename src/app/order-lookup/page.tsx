@@ -170,7 +170,7 @@ export default function OrderLookupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-amber-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -333,7 +333,7 @@ export default function OrderLookupPage() {
           )}
 
           {/* 회원가입 유도 */}
-          <div className="mt-8 bg-gradient-to-r from-primary-50 to-blue-50 rounded-3xl p-6 text-center">
+          <div className="mt-8 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-3xl p-6 text-center">
             <h3 className="font-bold text-lg mb-2">더 편하게 주문하고 싶으신가요?</h3>
             <p className="text-gray-600 text-sm mb-4">
               회원가입하시면 주문 내역이 자동 저장되고<br />

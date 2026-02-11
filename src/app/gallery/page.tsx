@@ -116,7 +116,7 @@ export default function GalleryPage() {
 
           {/* CTA Section */}
           <div className="mt-16 text-center">
-            <div className="bg-gradient-to-r from-primary-500 to-blue-400 rounded-3xl p-8 sm:p-12 text-white">
+            <div className="bg-gradient-to-r from-amber-500 to-yellow-400 rounded-3xl p-8 sm:p-12 text-white">
               <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">
                 나만의 메달을 만들어보세요!
               </h2>

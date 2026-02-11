@@ -464,7 +464,7 @@ export default function CheckoutPage() {
             <p className="text-gray-500 mb-8">메달을 만들어 주문해주세요.</p>
             <Link
               href="/order"
-              className="inline-block px-8 py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
+              className="inline-block px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
             >
               메달 만들러 가기 →
             </Link>
@@ -745,7 +745,7 @@ export default function CheckoutPage() {
                 <button
                   onClick={handleSubmitOrder}
                   disabled={submitting || !isFormValid()}
-                  className="w-full py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none"
+                  className="w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-amber-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none"
                 >
                   {submitting ? '주문 처리 중...' : `₩${(totalPrice + calculateShippingFee(totalPrice)).toLocaleString()} 결제하기`}
                 </button>

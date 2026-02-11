@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -52,14 +51,10 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 sm:h-18 relative">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image
-              src="/logo.png"
-              alt="메달프로젝트"
-              width={140}
-              height={45}
-              className="h-9 sm:h-11 w-auto"
-              priority
-            />
+            <span className="font-display text-xl sm:text-2xl font-extrabold tracking-tight">
+              <span className="text-amber-500">Medal</span>
+              <span className="text-gray-800"> Project</span>
+            </span>
           </Link>
 
           {/* Navigation - Desktop (중앙 배치) */}
@@ -100,7 +95,7 @@ export default function Header() {
                     onBlur={() => setTimeout(() => setUserMenuOpen(false), 150)}
                     className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-primary-600 font-medium transition-colors rounded-xl hover:bg-gray-50"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                       {user.email?.charAt(0).toUpperCase()}
                     </div>
                     <span className="hidden sm:block max-w-[100px] truncate">
@@ -166,7 +161,7 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/signup"
-                  className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all"
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-semibold shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 hover:-translate-y-0.5 transition-all"
                 >
                   회원가입
                 </Link>
@@ -260,7 +255,7 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/signup"
-                  className="block mx-4 py-3 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-semibold text-center"
+                  className="block mx-4 py-3 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-semibold text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   회원가입

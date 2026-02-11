@@ -178,7 +178,7 @@ export default function DashboardPage() {
               <p className="text-gray-500 mb-6">첫 번째 메달을 만들어보세요!</p>
               <Link
                 href="/order"
-                className="inline-block px-8 py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold shadow-lg shadow-primary-500/30 hover:shadow-xl transition-all"
+                className="inline-block px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/30 hover:shadow-xl transition-all"
               >
                 메달 만들기 →
               </Link>
@@ -276,7 +276,7 @@ export default function DashboardPage() {
                       <button 
                         onClick={() => handlePayOrder(order)}
                         disabled={paying === order.id}
-                        className="flex-1 py-3 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {paying === order.id ? '처리 중...' : '결제하기'}
                       </button>

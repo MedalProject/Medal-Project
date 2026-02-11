@@ -142,7 +142,7 @@ export default function QuantityInput({
                 key={tier.label}
                 className={`p-3 rounded-xl text-center transition-all ${
                   isActive
-                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
+                    ? 'bg-primary-500 text-white shadow-lg shadow-amber-500/30'
                     : 'bg-white border border-gray-200'
                 }`}
               >

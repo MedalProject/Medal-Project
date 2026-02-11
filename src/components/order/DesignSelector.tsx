@@ -110,7 +110,7 @@ export default function DesignSelector({
           <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 ${
             uploadHighlight 
               ? 'bg-red-500' 
-              : 'bg-gradient-to-r from-primary-500 to-blue-400'
+              : 'bg-gradient-to-r from-amber-500 to-yellow-400'
           }`}>
             {uploadHighlight ? '⚠️' : '📤'}
           </div>
