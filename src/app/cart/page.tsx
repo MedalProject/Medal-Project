@@ -195,12 +195,12 @@ export default function CartPage() {
                 🛒
               </div>
               <h2 className="text-xl font-bold mb-3">장바구니가 비어있습니다</h2>
-              <p className="text-gray-500 mb-8">원하는 뱃지를 장바구니에 담아보세요!</p>
+              <p className="text-gray-500 mb-8">원하는 메달을 장바구니에 담아보세요!</p>
               <Link
                 href="/order"
                 className="inline-block px-8 py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
               >
-                뱃지 만들러 가기 →
+                메달 만들러 가기 →
               </Link>
             </div>
           ) : (

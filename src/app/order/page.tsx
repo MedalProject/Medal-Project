@@ -284,7 +284,7 @@ export default function OrderPage() {
     const quoteItems = orderItems.map((item) => {
       const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
       return {
-        name: '금속 뱃지',
+        name: '금속 메달',
         spec: `${getPaintTypeName(item.paintType)} / ${getMetalColorName(item.metalColor)} / ${item.size}mm`,
         quantity: item.quantity,
         unitPrice: itemPrice.unitPrice,
@@ -440,7 +440,7 @@ export default function OrderPage() {
           {/* Page Header */}
           <div className="text-center mb-10">
             <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">
-              나만의 뱃지 만들기
+              나만의 메달 만들기
             </h1>
             <p className="text-gray-500 text-lg">디자인 파일 업로드 후 옵션을 선택하세요</p>
           </div>

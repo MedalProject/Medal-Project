@@ -175,12 +175,12 @@ export default function DashboardPage() {
                 📦
               </div>
               <h2 className="text-xl font-bold mb-3">아직 주문이 없습니다</h2>
-              <p className="text-gray-500 mb-6">첫 번째 뱃지를 만들어보세요!</p>
+              <p className="text-gray-500 mb-6">첫 번째 메달을 만들어보세요!</p>
               <Link
                 href="/order"
                 className="inline-block px-8 py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold shadow-lg shadow-primary-500/30 hover:shadow-xl transition-all"
               >
-                뱃지 만들기 →
+                메달 만들기 →
               </Link>
             </div>
           ) : (
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                 href="/order"
                 className="inline-block px-8 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-colors"
               >
-                + 새 뱃지 만들기
+                + 새 메달 만들기
               </Link>
             </div>
           )}

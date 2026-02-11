@@ -54,7 +54,7 @@ export default function Header() {
           <Link href="/" className="flex items-center">
             <Image
               src="/logo.png"
-              alt="Hey Badge"
+              alt="메달프로젝트"
               width={140}
               height={45}
               className="h-9 sm:h-11 w-auto"
@@ -65,7 +65,7 @@ export default function Header() {
           {/* Navigation - Desktop (중앙 배치) */}
           <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
             <Link href="/order" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">
-              뱃지 만들기
+              메달 만들기
             </Link>
             <Link href="/gallery" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">
               제작 사례 보기
@@ -195,7 +195,7 @@ export default function Header() {
               className="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
-              뱃지 만들기
+              메달 만들기
             </Link>
             <Link
               href="/gallery"

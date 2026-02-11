@@ -45,7 +45,7 @@ export function getKcpPayType(paymentMethod: KcpPaymentMethod): string {
   return 'PACA'
 }
 
-export function createOrderNumber(prefix = 'HB'): string {
+export function createOrderNumber(prefix = 'MD'): string {
   const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, '')
   const randomPart = Math.floor(Math.random() * 10000)
     .toString()
@@ -54,8 +54,8 @@ export function createOrderNumber(prefix = 'HB'): string {
 }
 
 export function createGoodName(itemCount: number): string {
-  if (itemCount <= 1) return '헤이뱃지 주문'
-  return `헤이뱃지 주문 ${itemCount}건`
+  if (itemCount <= 1) return '메달프로젝트 주문'
+  return `메달프로젝트 주문 ${itemCount}건`
 }
 
 export function isMobileUserAgent(userAgent: string | null): boolean {

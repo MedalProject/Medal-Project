@@ -1,5 +1,5 @@
 -- =============================================
--- 뱃지팩토리 데이터베이스 스키마
+-- 메달프로젝트 데이터베이스 스키마
 -- Supabase SQL Editor에서 이 파일 전체를 실행하세요
 -- =============================================
 
@@ -21,9 +21,9 @@ CREATE TABLE orders (
   order_number TEXT UNIQUE NOT NULL,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'producing', 'shipping', 'completed', 'cancelled')),
   
-  -- 뱃지 옵션
-  paint_type TEXT NOT NULL, -- normal(일반칠), epoxy(에폭시), resin(수지칠)
-  metal_color TEXT NOT NULL, -- gold(금도금), silver(은도금)
+  -- 메달 옵션
+  paint_type TEXT NOT NULL, -- soft_enamel(일반칠), soft_enamel_epoxy(에폭시), hard_enamel(수지칠) 등
+  metal_color TEXT NOT NULL, -- gold(금도금), silver(은도금) 등
   size INTEGER NOT NULL, -- mm
   quantity INTEGER NOT NULL,
   
@@ -39,8 +39,16 @@ CREATE TABLE orders (
   -- 배송 정보
   shipping_name TEXT,
   shipping_phone TEXT,
+  shipping_zonecode TEXT,
   shipping_address TEXT,
+  shipping_address_detail TEXT,
   shipping_memo TEXT,
+  
+  -- 결제 정보
+  payment_method TEXT,
+  
+  -- 비회원 주문 지원
+  guest_email TEXT,
   
   -- 시간
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
@@ -64,23 +72,23 @@ CREATE TABLE cart_items (
 );
 
 -- 4. 제작 사례 테이블
-CREATE TABLE badge_references (
+CREATE TABLE medal_references (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
   image_url TEXT NOT NULL,
-  paint_type TEXT NOT NULL, -- normal(일반칠), epoxy(에폭시), resin(수지칠)
-  metal_color TEXT NOT NULL, -- gold(금도금), silver(은도금)
+  paint_type TEXT NOT NULL,
+  metal_color TEXT NOT NULL,
   size TEXT NOT NULL, -- 예: "40mm", "50x30mm" 등
   is_featured BOOLEAN DEFAULT FALSE, -- 메인에 노출 여부
   display_order INTEGER DEFAULT 0, -- 정렬 순서
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- badge_references 테이블 RLS (모든 사용자가 읽기 가능)
-ALTER TABLE badge_references ENABLE ROW LEVEL SECURITY;
+-- medal_references 테이블 RLS (모든 사용자가 읽기 가능)
+ALTER TABLE medal_references ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view badge_references" ON badge_references
+CREATE POLICY "Anyone can view medal_references" ON medal_references
   FOR SELECT USING (true);
 
 -- 5. 디자인 템플릿 테이블 (선택사항)
@@ -107,6 +115,38 @@ INSERT INTO templates (name, icon, category) VALUES
   ('트로피', '🏆', 'premium'),
   ('팔레트', '🎨', 'basic'),
   ('전구', '💡', 'basic');
+
+-- 6. 결제 기록 테이블 (KCP)
+CREATE TABLE order_payments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_number TEXT NOT NULL,
+  status TEXT DEFAULT 'ready' CHECK (status IN ('ready', 'approved', 'failed')),
+  amount INTEGER NOT NULL,
+  shipping_fee INTEGER DEFAULT 0,
+  payment_method TEXT,
+  is_mobile BOOLEAN DEFAULT FALSE,
+  buyer_email TEXT,
+  buyer_name TEXT,
+  buyer_phone TEXT,
+  kcp_tno TEXT,
+  kcp_pay_method TEXT,
+  kcp_res_cd TEXT,
+  kcp_res_msg TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- 7. 사용자 디자인 테이블 (금형 재사용)
+CREATE TABLE user_designs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  design_url TEXT NOT NULL,
+  design_name TEXT NOT NULL,
+  memo TEXT,
+  preview_url TEXT,
+  mold_completed BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
 
 -- =============================================
 -- Row Level Security (RLS) 설정
@@ -136,6 +176,10 @@ CREATE POLICY "Users can insert own orders" ON orders
 CREATE POLICY "Users can update own orders" ON orders
   FOR UPDATE USING (auth.uid() = user_id);
 
+-- 비회원 주문 조회 정책
+CREATE POLICY "Guest can view orders by email" ON orders
+  FOR SELECT USING (guest_email IS NOT NULL);
+
 -- cart_items 테이블 RLS
 ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
 
@@ -147,6 +191,18 @@ ALTER TABLE templates ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Anyone can view templates" ON templates
   FOR SELECT USING (true);
+
+-- order_payments 테이블 RLS
+ALTER TABLE order_payments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Service role can manage payments" ON order_payments
+  FOR ALL USING (true);
+
+-- user_designs 테이블 RLS
+ALTER TABLE user_designs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own designs" ON user_designs
+  FOR ALL USING (auth.uid() = user_id);
 
 -- =============================================
 -- 트리거: 회원가입 시 자동으로 profile 생성
@@ -174,7 +230,7 @@ RETURNS TEXT AS $$
 DECLARE
   new_number TEXT;
 BEGIN
-  new_number := 'BF' || TO_CHAR(NOW(), 'YYMMDD') || '-' || LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0');
+  new_number := 'MD' || TO_CHAR(NOW(), 'YYMMDD') || '-' || LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0');
   RETURN new_number;
 END;
 $$ LANGUAGE plpgsql;
@@ -183,27 +239,6 @@ $$ LANGUAGE plpgsql;
 -- Storage 버킷 생성 (Supabase Dashboard에서 수동 생성 필요)
 -- 버킷 이름: designs
 -- Public: false
--- File size limit: 10MB
--- Allowed MIME types: image/png, image/jpeg, image/svg+xml, application/pdf
+-- File size limit: 50MB
+-- Allowed MIME types: application/postscript (AI 파일)
 -- =============================================
-
--- =============================================
--- 기존 DB 마이그레이션 (선택사항)
--- 기존 badge_type 컬럼을 paint_type으로 변경하고 값을 업데이트합니다.
--- 필요한 경우에만 실행하세요.
--- =============================================
--- 
--- 1. 컬럼 이름 변경
--- ALTER TABLE orders RENAME COLUMN badge_type TO paint_type;
--- ALTER TABLE cart_items RENAME COLUMN badge_type TO paint_type;
--- 
--- 2. 기존 값 마이그레이션
--- UPDATE orders SET paint_type = 'normal' WHERE paint_type IN ('soft-enamel', 'printed', 'acrylic');
--- UPDATE orders SET paint_type = 'epoxy' WHERE paint_type = 'hard-enamel';
--- 
--- UPDATE cart_items SET paint_type = 'normal' WHERE paint_type IN ('soft-enamel', 'printed', 'acrylic');
--- UPDATE cart_items SET paint_type = 'epoxy' WHERE paint_type = 'hard-enamel';
--- 
--- 3. 기존 metal_color도 업데이트 (rose-gold, black-nickel 제거)
--- UPDATE orders SET metal_color = 'gold' WHERE metal_color IN ('rose-gold', 'black-nickel');
--- UPDATE cart_items SET metal_color = 'gold' WHERE metal_color IN ('rose-gold', 'black-nickel');

@@ -20,7 +20,7 @@ export default function Home() {
     {
       icon: '📁',
       question: '어떤 파일 형식을 지원하나요?',
-      answer: 'Adobe Illustrator(.ai) 파일을 권장합니다. 벡터 형식이어야 고품질 뱃지 제작이 가능해요.',
+      answer: 'Adobe Illustrator(.ai) 파일을 권장합니다. 벡터 형식이어야 고품질 메달 제작이 가능해요.',
     },
     {
       icon: '🔢',
@@ -56,7 +56,7 @@ export default function Home() {
               <span className="gradient-text">현실로</span> 만드세요
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              AI 디자인 파일로 나만의 뱃지를 만들어 보세요.<br />
+              AI 디자인 파일로 나만의 메달을 만들어 보세요.<br />
               실시간 가격 확인으로 투명한 견적을 받아보실 수 있습니다.
             </p>
             
@@ -98,11 +98,11 @@ export default function Home() {
           {/* Badge Preview */}
           <div className="mt-16 flex justify-center">
             <div className="relative">
-              {/* 메인 뱃지 이미지 - 배경 투명 효과 */}
+              {/* 메인 메달 이미지 - 배경 투명 효과 */}
               <div className="relative w-80 h-52 sm:w-[450px] sm:h-72 lg:w-[550px] lg:h-80 badge-float">
                 <Image
                   src="/hero/hero_badge03.png"
-                  alt="헤이뱃지 실제 제작 사례"
+                  alt="메달프로젝트 실제 제작 사례"
                   fill
                   className="object-contain"
                   priority
@@ -118,10 +118,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">
-              왜 Hey Badge인가요?
+              왜 메달프로젝트인가요?
             </h2>
             <p className="text-gray-600 text-lg">
-              기존 뱃지 제작의 불편함을 모두 해결했습니다
+              기존 메달 제작의 불편함을 모두 해결했습니다
             </p>
           </div>
 
@@ -175,7 +175,7 @@ export default function Home() {
               이렇게 진행됩니다
             </h2>
             <p className="text-gray-600 text-lg">
-              간단한 4단계로 나만의 뱃지를 완성하세요
+              간단한 4단계로 나만의 메달을 완성하세요
             </p>
           </div>
 
@@ -262,10 +262,10 @@ export default function Home() {
               <div key={setIndex} className="flex gap-6 pr-6">
                 {[
                   { name: '김**', company: '스타트업 대표', rating: 5, text: '직원들 선물용으로 주문했는데 퀄리티가 정말 좋아요! 재주문 예정입니다.', badge: '금도금 30mm' },
-                  { name: '이**', company: '마케팅 담당자', rating: 5, text: '행사용 뱃지 500개 주문했는데 배송도 빠르고 품질도 만족스러워요.', badge: '에폭시 40mm' },
-                  { name: '박**', company: '동아리 회장', rating: 5, text: '동아리 뱃지 제작했어요. 가격도 합리적이고 결과물이 예뻐서 회원들 반응이 좋아요!', badge: '은도금 30mm' },
-                  { name: '최**', company: '기업 HR팀', rating: 5, text: '신입사원 웰컴키트에 들어갈 뱃지로 주문했습니다. 디테일이 살아있어요.', badge: '금도금 50mm' },
-                  { name: '정**', company: '팬클럽 운영자', rating: 5, text: '팬클럽 공식 뱃지로 제작했는데 회원들이 너무 좋아해요! 추가 주문 진행 중입니다.', badge: '에폭시 30mm' },
+                  { name: '이**', company: '마케팅 담당자', rating: 5, text: '행사용 메달 500개 주문했는데 배송도 빠르고 품질도 만족스러워요.', badge: '에폭시 40mm' },
+                  { name: '박**', company: '동아리 회장', rating: 5, text: '동아리 메달 제작했어요. 가격도 합리적이고 결과물이 예뻐서 회원들 반응이 좋아요!', badge: '은도금 30mm' },
+                  { name: '최**', company: '기업 HR팀', rating: 5, text: '신입사원 웰컴키트에 들어갈 메달로 주문했습니다. 디테일이 살아있어요.', badge: '금도금 50mm' },
+                  { name: '정**', company: '팬클럽 운영자', rating: 5, text: '팬클럽 공식 메달로 제작했는데 회원들이 너무 좋아해요! 추가 주문 진행 중입니다.', badge: '에폭시 30mm' },
                 ].map((review, i) => (
                   <div
                     key={`${setIndex}-${i}`}
@@ -299,10 +299,10 @@ export default function Home() {
             {[...Array(2)].map((_, setIndex) => (
               <div key={setIndex} className="flex gap-6 pr-6">
                 {[
-                  { name: '강**', company: '학교 선생님', rating: 5, text: '졸업 기념 뱃지로 주문했어요. 학생들이 정말 좋아합니다!', badge: '금도금 40mm' },
-                  { name: '윤**', company: '카페 사장님', rating: 5, text: '직원 명찰 겸 뱃지로 사용 중이에요. 고급스러워서 손님들도 좋아해요.', badge: '은도금 30mm' },
+                  { name: '강**', company: '학교 선생님', rating: 5, text: '졸업 기념 메달로 주문했어요. 학생들이 정말 좋아합니다!', badge: '금도금 40mm' },
+                  { name: '윤**', company: '카페 사장님', rating: 5, text: '직원 명찰 겸 메달로 사용 중이에요. 고급스러워서 손님들도 좋아해요.', badge: '은도금 30mm' },
                   { name: '송**', company: '게임 개발사', rating: 5, text: '게임 출시 기념 굿즈로 제작했는데 유저들 반응이 폭발적이에요!', badge: '에폭시 50mm' },
-                  { name: '한**', company: '비영리단체', rating: 5, text: '봉사자 감사 뱃지로 제작했습니다. 의미있는 선물이 되었어요.', badge: '금도금 30mm' },
+                  { name: '한**', company: '비영리단체', rating: 5, text: '봉사자 감사 메달로 제작했습니다. 의미있는 선물이 되었어요.', badge: '금도금 30mm' },
                   { name: '오**', company: '이벤트 기획사', rating: 5, text: '대규모 행사 기념품으로 1000개 주문했는데 납기도 잘 맞춰주셨어요.', badge: '에폭시 40mm' },
                 ].map((review, i) => (
                   <div
@@ -353,7 +353,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* 파리 올림픽 뱃지 */}
+            {/* 파리 올림픽 메달 */}
             <div className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-700 hover:border-amber-500/50 transition-all duration-300">
               <div className="absolute top-4 right-4">
                 <span className="px-3 py-1 bg-amber-500 text-gray-900 text-xs font-bold rounded-full">
@@ -364,7 +364,7 @@ export default function Home() {
               <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-gray-700">
                 <Image
                   src="/reveiw_samsung01.jpg"
-                  alt="2024 파리 올림픽 삼성 공식 뱃지"
+                  alt="2024 파리 올림픽 삼성 공식 메달"
                   width={400}
                   height={400}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -378,7 +378,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white">
                   2024 파리 올림픽<br />
-                  삼성전자 공식 기념 뱃지
+                  삼성전자 공식 기념 메달
                 </h3>
                 <p className="text-gray-400 text-sm">
                   SAMSUNG × Olympic Games Paris 2024
@@ -386,7 +386,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 평창 유스 올림픽 뱃지 */}
+            {/* 평창 유스 올림픽 메달 */}
             <div className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-700 hover:border-amber-500/50 transition-all duration-300">
               <div className="absolute top-4 right-4">
                 <span className="px-3 py-1 bg-amber-500 text-gray-900 text-xs font-bold rounded-full">
@@ -397,7 +397,7 @@ export default function Home() {
               <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-gray-700">
                 <Image
                   src="/reveiw_samsung02.jpg"
-                  alt="2024 평창 유스 올림픽 삼성 공식 뱃지"
+                  alt="2024 평창 유스 올림픽 삼성 공식 메달"
                   width={400}
                   height={400}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -411,7 +411,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white">
                   2024 강원 동계 유스 올림픽<br />
-                  삼성전자 공식 기념 뱃지
+                  삼성전자 공식 기념 메달
                 </h3>
                 <p className="text-gray-400 text-sm">
                   SAMSUNG × Winter Youth Olympic Games 2024
@@ -511,10 +511,10 @@ export default function Home() {
             <p className="text-gray-500 text-sm">
               더 궁금한 점이 있으신가요?{' '}
               <a
-                href="mailto:hello.heybadge@gmail.com"
+                href="mailto:hello.medalproject@gmail.com"
                 className="text-primary-600 font-medium hover:underline"
               >
-                hello.heybadge@gmail.com
+                hello.medalproject@gmail.com
               </a>
               으로 문의해주세요!
             </p>
@@ -535,7 +535,7 @@ export default function Home() {
             href="/order"
             className="inline-block px-10 py-5 bg-white text-primary-600 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
           >
-            나만의 뱃지 만들기 →
+            나만의 메달 만들기 →
           </Link>
         </div>
       </section>
@@ -571,14 +571,14 @@ export default function Home() {
               <div className="mb-4">
                 <Image
                   src="/logo.png"
-                  alt="헤이뱃지"
+                  alt="메달프로젝트"
                   width={120}
                   height={40}
                   className="h-10 w-auto brightness-0 invert"
                 />
               </div>
               <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-                글로벌 기업이 선택한 뱃지 제작 서비스
+                글로벌 기업이 선택한 메달 제작 서비스
               </p>
             </div>
             
@@ -590,14 +590,14 @@ export default function Home() {
             </div>
             
             <div className="text-sm text-gray-400 space-y-2">
-              <p>이메일: hello.heybadge@gmail.com</p>
+              <p>이메일: hello.medalproject@gmail.com</p>
               <p>전화: 0502-1910-3343</p>
               <p>평일 09:00 - 18:00</p>
             </div>
           </div>
           
           <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <span>© 2025 HeyBadge. All rights reserved.</span>
+            <span>© 2026 Medal Project. All rights reserved.</span>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
               <Link href="/order-lookup" className="hover:text-white transition-colors">
                 주문조회

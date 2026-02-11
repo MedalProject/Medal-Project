@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
         <Link href="/" className="flex items-center justify-center mb-8">
           <Image
             src="/logo.png"
-            alt="Hey Badge"
+            alt="메달프로젝트"
             width={160}
             height={50}
             className="h-12 w-auto"

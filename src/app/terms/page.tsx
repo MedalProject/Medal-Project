@@ -15,7 +15,7 @@ export default function TermsPage() {
             <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">
               서비스 이용약관
             </h1>
-            <p className="text-gray-500 text-lg">헤이뱃지 서비스 이용 약관</p>
+            <p className="text-gray-500 text-lg">메달프로젝트 서비스 이용 약관</p>
           </div>
 
           {/* 콘텐츠 */}
@@ -25,7 +25,7 @@ export default function TermsPage() {
             <section>
               <div className="bg-primary-50 rounded-2xl p-5 border border-primary-200 text-gray-700">
                 <p>
-                  본 약관은 헤이뱃지(이하 &quot;회사&quot;)가 제공하는 서비스의 
+                  본 약관은 메달프로젝트(이하 &quot;회사&quot;)가 제공하는 서비스의 
                   이용조건 및 절차, 회사와 이용자의 권리, 의무 및 책임사항을 규정합니다.
                 </p>
               </div>
@@ -39,8 +39,8 @@ export default function TermsPage() {
               </h2>
               <div className="bg-gray-50 rounded-2xl p-5 text-gray-700">
                 <p>
-                  본 약관은 회사가 운영하는 웹사이트(hey-badge.vercel.app)에서 
-                  제공하는 네임택, 뱃지 등 주문제작 서비스(이하 &quot;서비스&quot;)의 이용과 관련하여 
+                  본 약관은 회사가 운영하는 웹사이트(medal-project.vercel.app)에서 
+                  제공하는 메달 등 주문제작 서비스(이하 &quot;서비스&quot;)의 이용과 관련하여 
                   회사와 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
                 </p>
               </div>
@@ -56,7 +56,7 @@ export default function TermsPage() {
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-primary-500 mt-1">•</span>
-                    <span><strong>&quot;서비스&quot;</strong>란 회사가 제공하는 네임택, 뱃지 등 주문제작 서비스를 말합니다.</span>
+                    <span><strong>&quot;서비스&quot;</strong>란 회사가 제공하는 메달 등 주문제작 서비스를 말합니다.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary-500 mt-1">•</span>
@@ -81,7 +81,7 @@ export default function TermsPage() {
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-primary-500 mt-1">•</span>
-                    <span>네임택, 뱃지 등 주문제작 상품 판매</span>
+                    <span>메달 등 주문제작 상품 판매</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary-500 mt-1">•</span>
@@ -291,7 +291,7 @@ export default function TermsPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">이메일</p>
-                    <p className="font-semibold text-gray-900">hello.heybadge@gmail.com</p>
+                    <p className="font-semibold text-gray-900">hello.medalproject@gmail.com</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">전화</p>

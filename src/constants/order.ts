@@ -7,7 +7,7 @@
 
 import type { MetalColorOption, SizeOption, QuantityTier, PaintTypeOption } from '@/types/order'
 
-// 뱃지 종류 옵션 (7종류) - 업계 표준 영문명 ID
+// 메달 종류 옵션 (7종류) - 업계 표준 영문명 ID
 // ⚠️ 이미지는 나중에 실제 값으로 교체 필요 (public/badge-types/ 폴더)
 export const PAINT_TYPES: PaintTypeOption[] = [
   {
@@ -19,7 +19,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
       '가장 대중적이고 인기있는 제작 방식입니다',
       '선명한 색상 표현이 가능합니다',
     ],
-    recommendation: '단체 뱃지, 행사용, 기념품',
+    recommendation: '단체 메달, 행사용, 기념품',
     image: '/badge-types/soft_enamel.png',
     icon: '🖌️',
     color: 'from-amber-400 to-orange-500',
@@ -34,7 +34,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
       '표면이 매끄럽고 광택이 나서 고급스럽습니다',
       '코팅으로 인해 내구성이 향상됩니다',
     ],
-    recommendation: '프리미엄 뱃지, 선물용, VIP 기념품',
+    recommendation: '프리미엄 메달, 선물용, VIP 기념품',
     image: '/badge-types/soft_enamel_epoxy.png',
     icon: '💧',
     color: 'from-cyan-400 to-blue-500',
@@ -49,7 +49,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
       '매끄러운 촉감과 고급스러운 외관을 제공합니다',
       '반투명한 색감으로 부드러운 느낌을 줍니다',
     ],
-    recommendation: '고급 브랜드 뱃지, 수집용, 한정판',
+    recommendation: '고급 브랜드 메달, 수집용, 한정판',
     image: '/badge-types/hard_enamel.png',
     icon: '🌈',
     color: 'from-purple-400 to-pink-500',
@@ -64,7 +64,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
       'UV 잉크로 선명한 풀컬러 인쇄를 제공합니다',
       '세밀한 디테일과 다양한 색상 표현에 적합합니다',
     ],
-    recommendation: '캐릭터 뱃지, 포토 뱃지, 일러스트',
+    recommendation: '캐릭터 메달, 포토 메달, 일러스트',
     image: '/badge-types/printed.png',
     icon: '🖼️',
     color: 'from-rose-400 to-red-500',
@@ -77,7 +77,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
     detailedDescription: [
       '입체적인 양각 디자인으로 볼륨감을 표현합니다',
       '로고나 심볼을 돋보이게 하는데 효과적입니다',
-      '독특하고 인상적인 뱃지를 원할 때 추천합니다',
+      '독특하고 인상적인 메달을 원할 때 추천합니다',
     ],
     recommendation: '브랜드 로고, 마스코트, 특별 기념품',
     image: '/badge-types/3d.png',
@@ -94,7 +94,7 @@ export const PAINT_TYPES: PaintTypeOption[] = [
       '클래식하고 고급스러운 느낌을 줍니다',
       '심플한 로고나 텍스트 표현에 적합합니다',
     ],
-    recommendation: '공식 뱃지, 클래식 디자인, 명패',
+    recommendation: '공식 메달, 클래식 디자인, 명패',
     image: '/badge-types/die_struck.png',
     icon: '⚙️',
     color: 'from-gray-400 to-gray-600',

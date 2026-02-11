@@ -82,7 +82,7 @@ export default function LoginPage() {
         <Link href="/" className="flex items-center justify-center mb-8">
           <Image
             src="/logo.png"
-            alt="Hey Badge"
+            alt="메달프로젝트"
             width={160}
             height={50}
             className="h-12 w-auto"
@@ -254,7 +254,8 @@ export default function LoginPage() {
 
               <button
                 onClick={() => {
-                  window.open('https://pf.kakao.com/_JjxbQn/chat', '_blank')
+                  // TODO: 메달프로젝트 카카오톡 채널 생성 후 URL 변경
+                  window.open('https://pf.kakao.com/chat', '_blank')
                   setShowForgotIdModal(false)
                 }}
                 className="w-full py-3 bg-[#FEE500] hover:bg-[#FDD800] text-[#3C1E1E] rounded-xl font-bold transition-colors flex items-center justify-center gap-2"

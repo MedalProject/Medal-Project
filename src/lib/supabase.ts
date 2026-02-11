@@ -93,7 +93,7 @@ export type UserDesign = {
 // 금형비
 export const MOLD_FEE = 90000
 
-// 가격 계산 유틸리티 - 뱃지 종류별 추가 비용 (업계 표준 영문명 ID)
+// 가격 계산 유틸리티 - 메달 종류별 추가 비용 (업계 표준 영문명 ID)
 // ⚠️ 가격은 나중에 실제 값으로 교체 필요
 export const priceTable: Record<string, { base: number; addon: number; name: string }> = {
   'soft_enamel': { base: 3500, addon: 0, name: '일반칠' },
@@ -109,8 +109,8 @@ export const priceTable: Record<string, { base: number; addon: number; name: str
 export const legacyPaintTypeLabels: Record<string, string> = {
   'soft-enamel': '소프트 에나멜',
   'hard-enamel': '하드 에나멜',
-  'printed': '프린트 뱃지',
-  'acrylic': '아크릴 뱃지',
+  'printed': '프린트 메달',
+  'acrylic': '아크릴 메달',
 }
 
 // paint_type을 한글로 변환하는 헬퍼 함수

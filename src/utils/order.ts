@@ -18,8 +18,8 @@ export function getMetalColorName(colorId: string): string {
 }
 
 /**
- * 뱃지 종류를 한글 이름으로 변환
- * @param paintType - 뱃지 종류 ID (예: 'normal', 'resin', '3d')
+ * 메달 종류를 한글 이름으로 변환
+ * @param paintType - 메달 종류 ID (예: 'normal', 'resin', '3d')
  * @returns 한글 종류명
  */
 export function getPaintTypeName(paintType: string): string {

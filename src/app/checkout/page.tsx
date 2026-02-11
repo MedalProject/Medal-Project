@@ -14,7 +14,7 @@ const metalColors = [
   { id: 'silver', name: '은도금' },
 ]
 
-const KCP_SITE_NAME = 'HEYBADGE'
+const KCP_SITE_NAME = 'MEDALPROJECT'
 
 // 다음 우편번호 API 타입 정의
 interface DaumPostcodeData {
@@ -461,12 +461,12 @@ export default function CheckoutPage() {
               📦
             </div>
             <h1 className="text-2xl font-bold mb-4">주문할 상품이 없습니다</h1>
-            <p className="text-gray-500 mb-8">뱃지를 만들어 주문해주세요.</p>
+            <p className="text-gray-500 mb-8">메달을 만들어 주문해주세요.</p>
             <Link
               href="/order"
               className="inline-block px-8 py-4 bg-gradient-to-r from-primary-500 to-blue-400 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
             >
-              뱃지 만들러 가기 →
+              메달 만들러 가기 →
             </Link>
           </div>
         </main>

@@ -1,10 +1,13 @@
 'use client'
 
-// 카카오톡 채널 ID를 여기에 입력하세요
-// 예: @heybadge 또는 _xkxkxk 형태의 ID
-const KAKAO_CHANNEL_ID = '_JjxbQn' // TODO: 실제 채널 ID로 변경
+// TODO: 메달프로젝트 카카오톡 채널 생성 후 채널 ID 입력
+// 예: @medalproject 또는 _xkxkxk 형태의 ID
+const KAKAO_CHANNEL_ID = '' // 채널 ID 미설정 시 버튼 숨김
 
 export default function KakaoChat() {
+  // 채널 ID가 없으면 렌더링하지 않음
+  if (!KAKAO_CHANNEL_ID) return null
+
   const handleClick = () => {
     // 카카오톡 채널 채팅 URL
     window.open(`https://pf.kakao.com/${KAKAO_CHANNEL_ID}/chat`, '_blank')

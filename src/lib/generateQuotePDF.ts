@@ -85,7 +85,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<void> {
           ${data.items.map((item, index) => `
             <tr>
               <td style="padding: 12px 8px; text-align: center; font-size: 13px; border-bottom: 1px solid #f0f0f0;">${index + 1}</td>
-              <td style="padding: 12px 8px; text-align: left; font-size: 13px; border-bottom: 1px solid #f0f0f0;">금속 뱃지</td>
+              <td style="padding: 12px 8px; text-align: left; font-size: 13px; border-bottom: 1px solid #f0f0f0;">금속 메달</td>
               <td style="padding: 12px 8px; text-align: left; font-size: 13px; border-bottom: 1px solid #f0f0f0;">${item.spec}</td>
               <td style="padding: 12px 8px; text-align: center; font-size: 13px; border-bottom: 1px solid #f0f0f0;">${item.quantity.toLocaleString()}</td>
               <td style="padding: 12px 8px; text-align: right; font-size: 13px; border-bottom: 1px solid #f0f0f0;">₩${item.unitPrice.toLocaleString()}</td>
@@ -141,7 +141,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<void> {
         <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
           <tr>
             <td style="padding: 6px 0; color: #666; width: 100px;">상호</td>
-            <td style="padding: 6px 0; color: #1a1a1a;">바로해 (헤이뱃지)</td>
+            <td style="padding: 6px 0; color: #1a1a1a;">바로해 (메달프로젝트)</td>
           </tr>
           <tr>
             <td style="padding: 6px 0; color: #666;">대표자</td>
@@ -157,7 +157,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<void> {
           </tr>
           <tr>
             <td style="padding: 6px 0; color: #666;">연락처</td>
-            <td style="padding: 6px 0; color: #1a1a1a;">0502-1910-3343 / hello.heybadge@gmail.com</td>
+            <td style="padding: 6px 0; color: #1a1a1a;">0502-1910-3343 / hello.medalproject@gmail.com</td>
           </tr>
         </table>
       </div>
@@ -165,7 +165,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<void> {
       <!-- 안내문구 -->
       <div style="text-align: center; padding: 20px 0; color: #888; font-size: 12px;">
         <p style="margin: 0 0 4px 0;">본 견적서는 발행일로부터 7일간 유효합니다.</p>
-        <p style="margin: 0;">HeyBadge를 이용해 주셔서 감사합니다.</p>
+        <p style="margin: 0;">메달프로젝트를 이용해 주셔서 감사합니다.</p>
       </div>
 
       <!-- 푸터 -->
@@ -209,7 +209,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<void> {
     const imgY = 0
 
     pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio)
-    pdf.save(`헤이뱃지_견적서_${formatDateShort(today)}.pdf`)
+    pdf.save(`메달프로젝트_견적서_${formatDateShort(today)}.pdf`)
   } finally {
     // 임시 요소 제거
     document.body.removeChild(container)

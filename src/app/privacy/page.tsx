@@ -15,7 +15,7 @@ export default function PrivacyPage() {
             <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">
               개인정보처리방침
             </h1>
-            <p className="text-gray-500 text-lg">헤이뱃지 개인정보 보호 정책</p>
+            <p className="text-gray-500 text-lg">메달프로젝트 개인정보 보호 정책</p>
           </div>
 
           {/* 콘텐츠 */}
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
             <section>
               <div className="bg-primary-50 rounded-2xl p-5 border border-primary-200 text-gray-700">
                 <p>
-                  헤이뱃지(이하 &quot;회사&quot;)는 정보통신망 이용촉진 및 정보보호 등에 관한 법률, 
+                  메달프로젝트(이하 &quot;회사&quot;)는 정보통신망 이용촉진 및 정보보호 등에 관한 법률, 
                   개인정보보호법 등 관련 법령에 따라 이용자의 개인정보를 보호하고 있습니다.
                 </p>
               </div>
@@ -211,7 +211,7 @@ export default function PrivacyPage() {
                   </li>
                 </ul>
                 <p className="mt-3 text-sm text-gray-500">
-                  위 권리 행사는 이메일(hello.heybadge@gmail.com)로 요청하실 수 있습니다.
+                  위 권리 행사는 이메일(hello.medalproject@gmail.com)로 요청하실 수 있습니다.
                 </p>
               </div>
             </section>
@@ -247,7 +247,7 @@ export default function PrivacyPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">이메일</p>
-                    <p className="font-semibold text-gray-900">hello.heybadge@gmail.com</p>
+                    <p className="font-semibold text-gray-900">hello.medalproject@gmail.com</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">전화</p>

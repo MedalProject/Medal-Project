@@ -17,7 +17,7 @@ body {
   font-family: 'Outfit', sans-serif;
 }
 
-/* 뱃지 3D 애니메이션 */
+/* 메달 3D 애니메이션 */
 @keyframes float {
   0%, 100% { transform: translateY(0) rotateY(0); }
   50% { transform: translateY(-10px) rotateY(5deg); }

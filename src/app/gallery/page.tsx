@@ -17,7 +17,7 @@ export default function GalleryPage() {
   const fetchReferenceItems = async () => {
     try {
       const { data, error } = await supabase
-        .from('badge_references')
+        .from('medal_references')
         .select('*')
         .order('display_order', { ascending: true })
         .order('created_at', { ascending: false })
@@ -43,7 +43,7 @@ export default function GalleryPage() {
               제작 사례 보기
             </h1>
             <p className="text-gray-500 text-lg">
-              Hey Badge에서 제작된 다양한 뱃지들을 만나보세요
+              메달프로젝트에서 제작된 다양한 메달들을 만나보세요
             </p>
           </div>
 
@@ -118,16 +118,16 @@ export default function GalleryPage() {
           <div className="mt-16 text-center">
             <div className="bg-gradient-to-r from-primary-500 to-blue-400 rounded-3xl p-8 sm:p-12 text-white">
               <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">
-                나만의 뱃지를 만들어보세요!
+                나만의 메달을 만들어보세요!
               </h2>
               <p className="text-white/80 mb-8 max-w-xl mx-auto">
-                AI 파일만 있으면 20일 이내에 고품질 뱃지를 받아보실 수 있습니다.
+                AI 파일만 있으면 20일 이내에 고품질 메달을 받아보실 수 있습니다.
               </p>
               <a
                 href="/order"
                 className="inline-block px-8 py-4 bg-white text-primary-600 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
               >
-                뱃지 만들기 →
+                메달 만들기 →
               </a>
             </div>
           </div>

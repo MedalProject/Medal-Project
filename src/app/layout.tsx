@@ -5,12 +5,12 @@ import KakaoChat from '@/components/KakaoChat'
 import AuthCodeRedirect from '@/components/AuthCodeRedirect'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://hey-badge.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://medal-project.vercel.app'),
   title: {
-    default: '헤이뱃지 - 1개부터 나만의 뱃지 제작',
-    template: '%s | 헤이뱃지',
+    default: '메달프로젝트 - 1개부터 나만의 메달 제작',
+    template: '%s | 메달프로젝트',
   },
-  description: '사진 한 장으로 나만의 뱃지를 만들어 보세요. 실시간 3D 미리보기, 투명한 가격, 20일 이내 발송',
+  description: '디자인 파일로 나만의 메달을 만들어 보세요. 실시간 가격 확인, 투명한 견적, 20일 이내 발송',
   alternates: {
     canonical: '/',
   },
@@ -18,22 +18,22 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ko_KR',
     url: '/',
-    siteName: '헤이뱃지',
-    title: '헤이뱃지 - 1개부터 나만의 뱃지 제작',
-    description: '사진 한 장으로 나만의 뱃지를 만들어 보세요. 실시간 3D 미리보기, 투명한 가격, 20일 이내 발송',
+    siteName: '메달프로젝트',
+    title: '메달프로젝트 - 1개부터 나만의 메달 제작',
+    description: '디자인 파일로 나만의 메달을 만들어 보세요. 실시간 가격 확인, 투명한 견적, 20일 이내 발송',
     images: [
       {
         url: '/logo.png',
         width: 1200,
         height: 630,
-        alt: '헤이뱃지',
+        alt: '메달프로젝트',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '헤이뱃지 - 1개부터 나만의 뱃지 제작',
-    description: '사진 한 장으로 나만의 뱃지를 만들어 보세요. 실시간 3D 미리보기, 투명한 가격, 20일 이내 발송',
+    title: '메달프로젝트 - 1개부터 나만의 메달 제작',
+    description: '디자인 파일로 나만의 메달을 만들어 보세요. 실시간 가격 확인, 투명한 견적, 20일 이내 발송',
     images: ['/logo.png'],
   },
   robots: {
@@ -44,12 +44,7 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
-  verification: {
-    other: {
-      // 네이버 서치어드바이저 사이트 소유확인
-      'naver-site-verification': 'b83b276d7f9155f28866f50bca655c91a606bf9c',
-    },
-  },
+  // TODO: 새 네이버 서치어드바이저/구글 서치콘솔 등록 후 verification 추가
 }
 
 export default function RootLayout({
@@ -61,9 +56,9 @@ export default function RootLayout({
   const websiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "헤이뱃지",
-    "alternateName": ["Hey Badge", "헤이 뱃지"],
-    "url": "https://hey-badge.vercel.app"
+    "name": "메달프로젝트",
+    "alternateName": ["Medal Project", "메달 프로젝트"],
+    "url": process.env.NEXT_PUBLIC_SITE_URL || "https://medal-project.vercel.app"
   }
 
   return (

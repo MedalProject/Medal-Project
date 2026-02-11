@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * 뱃지 종류 선택 컴포넌트
+ * 메달 종류 선택 컴포넌트
  * 
- * 일반칠, 에폭시, 수지칠, 칠없음, 3D 입체, UV인쇄, 기타 등의 뱃지 타입을 선택합니다.
+ * 일반칠, 에폭시, 수지칠, 칠없음, 3D 입체, UV인쇄, 기타 등의 메달 타입을 선택합니다.
  * 선택 시 하단에 상세 정보와 이미지를 표시합니다.
  */
 
@@ -47,7 +47,7 @@ export default function PaintTypeSelector({ value, onChange, onCustomSelect }: P
           🎨
         </div>
         <div>
-          <h2 className="font-bold text-lg">뱃지 종류</h2>
+          <h2 className="font-bold text-lg">메달 종류</h2>
           <p className="text-gray-500 text-sm">원하시는 제작 방식을 선택하세요</p>
         </div>
       </div>

@@ -15,7 +15,7 @@ export default function RefundPage() {
             <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">
               환불 규정
             </h1>
-            <p className="text-gray-500 text-lg">헤이뱃지 서비스 환불 정책 안내</p>
+            <p className="text-gray-500 text-lg">메달프로젝트 서비스 환불 정책 안내</p>
           </div>
 
           {/* Content */}
@@ -28,7 +28,7 @@ export default function RefundPage() {
                 환불 기본 원칙
               </h2>
               <div className="bg-gray-50 rounded-2xl p-5 space-y-3 text-gray-700">
-                <p>헤이뱃지는 고객님의 만족을 최우선으로 생각합니다.</p>
+                <p>메달프로젝트는 고객님의 만족을 최우선으로 생각합니다.</p>
                 <p>주문제작 상품의 특성상 아래 환불 규정에 따라 처리됩니다.</p>
               </div>
             </section>
@@ -147,7 +147,7 @@ export default function RefundPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">이메일</p>
-                    <p className="font-semibold text-gray-900">hello.heybadge@gmail.com</p>
+                    <p className="font-semibold text-gray-900">hello.medalproject@gmail.com</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">전화</p>

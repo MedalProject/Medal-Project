@@ -5,7 +5,7 @@
  * 다른 파일에서 import해서 사용하세요.
  */
 
-// 뱃지 종류 (칠 타입) - 업계 표준 영문명
+// 메달 종류 (칠 타입) - 업계 표준 영문명
 export type PaintType = 
   | 'soft_enamel'       // 일반칠
   | 'soft_enamel_epoxy' // 일반칠 + 에폭시
@@ -15,7 +15,7 @@ export type PaintType =
   | 'printed'           // UV인쇄
   | 'custom'            // 기타 (카카오톡 문의)
 
-// 뱃지 종류 옵션 타입
+// 메달 종류 옵션 타입
 export type PaintTypeOption = {
   id: PaintType
   name: string           // 표시 이름
