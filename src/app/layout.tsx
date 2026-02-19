@@ -23,10 +23,10 @@ export const metadata: Metadata = {
     description: '디자인 파일로 나만의 메달을 만들어 보세요. 실시간 가격 확인, 투명한 견적, 20일 이내 발송',
     images: [
       {
-        url: '/logo.png',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: '메달프로젝트',
+        alt: '메달프로젝트 - 1개부터 나만의 메달 제작',
       },
     ],
   },
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: '메달프로젝트 - 1개부터 나만의 메달 제작',
     description: '디자인 파일로 나만의 메달을 만들어 보세요. 실시간 가격 확인, 투명한 견적, 20일 이내 발송',
-    images: ['/logo.png'],
+    images: ['/og-image.png'],
   },
   robots: {
     index: true,
