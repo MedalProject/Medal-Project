@@ -62,6 +62,9 @@ export default function Header() {
             <Link href="/order" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">
               메달 만들기
             </Link>
+            <Link href="/design-request" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">
+              디자인 의뢰
+            </Link>
             <Link href="/gallery" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">
               제작 사례 보기
             </Link>
@@ -191,6 +194,13 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(false)}
             >
               메달 만들기
+            </Link>
+            <Link
+              href="/design-request"
+              className="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              🎨 디자인 의뢰
             </Link>
             <Link
               href="/gallery"

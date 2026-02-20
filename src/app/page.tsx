@@ -67,15 +67,17 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Link
               href="/order"
-              className="px-10 py-4 bg-gray-900 text-white rounded-full font-bold text-lg hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/20 hover:-translate-y-0.5"
+              className="group px-10 py-5 bg-gray-900 text-white rounded-2xl font-bold text-lg hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/20 hover:-translate-y-0.5 text-center"
             >
-              바로 견적받기
+              <span className="block">디자인이 있어요</span>
+              <span className="block text-sm font-medium text-gray-400 group-hover:text-gray-300 mt-1">바로 견적받기 →</span>
             </Link>
             <Link
-              href="/gallery"
-              className="px-10 py-4 bg-white border border-gray-300 text-gray-700 rounded-full font-bold text-lg hover:border-gray-400 hover:text-gray-900 transition-all"
+              href="/design-request"
+              className="group px-10 py-5 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl font-bold text-lg hover:border-amber-400 hover:text-gray-900 transition-all text-center"
             >
-              제작 사례 보기
+              <span className="block">디자인이 없어요</span>
+              <span className="block text-sm font-medium text-amber-600 mt-1">무료 디자인 의뢰 →</span>
             </Link>
           </div>
 
@@ -359,14 +361,22 @@ export default function Home() {
             지금 바로 시작하세요
           </h2>
           <p className="text-gray-400 text-lg mb-10">
-            회원가입 없이도 바로 견적을 확인할 수 있습니다
+            디자인이 있어도, 없어도 괜찮습니다
           </p>
-          <Link
-            href="/order"
-            className="inline-block px-10 py-4 bg-white text-gray-900 rounded-full font-bold text-lg hover:bg-gray-100 transition-all shadow-lg hover:-translate-y-0.5"
-          >
-            바로 견적받기 →
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/order"
+              className="inline-block px-10 py-4 bg-white text-gray-900 rounded-full font-bold text-lg hover:bg-gray-100 transition-all shadow-lg hover:-translate-y-0.5"
+            >
+              바로 견적받기 →
+            </Link>
+            <Link
+              href="/design-request"
+              className="inline-block px-10 py-4 bg-transparent border-2 border-gray-600 text-white rounded-full font-bold text-lg hover:border-amber-500 hover:text-amber-400 transition-all"
+            >
+              무료 디자인 의뢰 →
+            </Link>
+          </div>
         </div>
       </section>
 

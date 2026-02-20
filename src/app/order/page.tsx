@@ -1,551 +1,566 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Header from '@/components/Header'
-import { createClient, calculatePrice, calculateShippingFee, MOLD_FEE, UserDesign } from '@/lib/supabase'
-import { generateQuotePDF } from '@/lib/generateQuotePDF'
-import type { User } from '@supabase/supabase-js'
+import Image from 'next/image'
+import { calculatePrice, calculateShippingFee } from '@/lib/supabase'
 
-// 타입 & 상수 import
-import type { OrderItem, DesignMode, ToastType } from '@/types/order'
-import { getMetalColorName, getPaintTypeName, generateOrderItemId } from '@/utils/order'
-import { 
-  PaintTypeSelector, 
-  MetalColorSelector, 
-  SizeSelector, 
-  QuantityInput, 
-  OrderItemList,
-  DesignSelector,
-  OrderPreview 
-} from '@/components/order'
+// ─── 메달 스타일 (vastgifts Step 1 동일) ─────────────────────────────
+const MEDAL_STYLES = [
+  {
+    id: 'soft_enamel',
+    name: '일반칠',
+    english: 'Soft Enamel',
+    gradient: 'from-amber-300 to-yellow-500',
+    emoji: '🏅',
+  },
+  {
+    id: 'die_struck',
+    name: '다이캐스트',
+    english: 'Die Cast',
+    gradient: 'from-gray-300 to-gray-500',
+    emoji: '🥇',
+  },
+  {
+    id: '3d',
+    name: '3D 다이캐스트',
+    english: '3D Die Cast',
+    gradient: 'from-amber-400 to-orange-600',
+    emoji: '🎖️',
+  },
+]
+
+// ─── 메달 사이즈 (vastgifts Step 2 동일) ─────────────────────────────
+// priceSize: 기존 calculatePrice에 매핑되는 크기 값
+const MEDAL_SIZES = [
+  { value: 40, label: '44.5mm', priceSize: 40 },
+  { value: 50, label: '50.8mm', priceSize: 50 },
+  { value: 60, label: '63.5mm', priceSize: 60 },
+  { value: 70, label: '69.9mm (인기)', priceSize: 70 },
+  { value: 80, label: '76.2mm', priceSize: 80 },
+  { value: 0, label: '알아서 결정해주세요', priceSize: 70 },
+]
+
+// ─── 리본 고리 타입 (vastgifts Step 3 동일) ──────────────────────────
+const RIBBON_TYPES = [
+  { id: 'round', name: '고리형', english: 'Round Shape', emoji: '🔗' },
+  { id: 'wide_sewn', name: '넓은 리본 - 봉제형', english: 'Sewn to Fit', emoji: '🎀' },
+  { id: 'wide_free', name: '넓은 리본 - 자유형', english: 'Free-Moving Ribbon', emoji: '🎗️' },
+]
+
+const RIBBON_WIDTHS = [
+  { value: '19mm', label: '19.1mm' },
+  { value: '25mm', label: '25.4mm (가장 인기)' },
+  { value: '32mm', label: '31.8mm' },
+  { value: '38mm', label: '38.1mm' },
+]
+
+const RIBBON_LENGTHS = [
+  { value: '37cm', label: '36.8cm' },
+  { value: '41cm', label: '40.6cm (가장 인기)' },
+  { value: '46cm', label: '45.7cm' },
+]
+
+// ─── 도금 색상 (vastgifts Step 4 동일 6종) ───────────────────────────
+const METAL_FINISHES = [
+  { id: 'gold', name: '금도금', english: 'Gold', image: '/plating/plating_gold.png', cssColor: 'bg-gradient-to-br from-yellow-300 to-amber-500' },
+  { id: 'silver', name: '은도금', english: 'Silver (Nickel)', image: '/plating/plating_silver.png', cssColor: 'bg-gradient-to-br from-gray-200 to-gray-400' },
+  { id: 'copper', name: '동도금', english: 'Bronze (Copper)', image: '/plating/plating_copper.png', cssColor: 'bg-gradient-to-br from-amber-600 to-orange-800' },
+  { id: 'antique_gold', name: '앤틱 금', english: 'Antique Gold', image: '/plating/plating_antique_gold.png', cssColor: 'bg-gradient-to-br from-yellow-600 to-amber-800' },
+  { id: 'antique_silver', name: '앤틱 은', english: 'Antique Silver', image: '/plating/plating_antique_silver.png', cssColor: 'bg-gradient-to-br from-gray-400 to-gray-600' },
+  { id: 'antique_copper', name: '앤틱 동', english: 'Antique Bronze (Copper)', image: '/plating/plating_antique_copper.png', cssColor: 'bg-gradient-to-br from-orange-700 to-amber-900' },
+]
+
+// ─── 포장 방식 (vastgifts Step 5 동일) ───────────────────────────────
+const PACKING_OPTIONS = [
+  { id: 'clear_bag', name: '투명 봉투', english: 'Clear Bag', price: 0, tag: '무료', emoji: '🛍️' },
+  { id: 'plastic_box', name: '플라스틱 케이스', english: 'Plastic Box', price: 500, tag: '+₩500', emoji: '📦' },
+  { id: 'velvet_bag', name: '벨벳 주머니', english: 'Velvet Bag', price: 800, tag: '+₩800', emoji: '👝' },
+  { id: 'velvet_box', name: '벨벳 케이스', english: 'Velvet Box', price: 1500, tag: '+₩1,500', emoji: '🎁' },
+]
+
+const ACCEPTED_FILES = '.jpeg,.jpg,.png,.pdf,.psd,.ai,.eps,.svg'
+const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function OrderPage() {
-  const router = useRouter()
-  const supabase = createClient()
-  
-  // State
-  const [user, setUser] = useState<User | null>(null)
-  const [paintType, setPaintType] = useState('soft_enamel')
-  const [metalColor, setMetalColor] = useState('gold')
-  const [size, setSize] = useState(30)
-  const [quantity, setQuantity] = useState(1)
-  const [designFile, setDesignFile] = useState<File | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [toast, setToast] = useState('')
-  const [toastType, setToastType] = useState<ToastType>('success')
-  const [uploadHighlight, setUploadHighlight] = useState(false)
-  
-  // 디자인 선택 관련 상태
-  const [designMode, setDesignMode] = useState<DesignMode>('new')
-  const [userDesigns, setUserDesigns] = useState<UserDesign[]>([])
-  const [selectedDesign, setSelectedDesign] = useState<UserDesign | null>(null)
-  const [designsLoading, setDesignsLoading] = useState(false)
-  
-  // 주문 항목 목록
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([])
-  
-  // 업로드 영역 ref
-  const uploadRef = useRef<HTMLLabelElement>(null)
+  // ─── Step 1: 메달 스타일 ───
+  const [medalStyle, setMedalStyle] = useState('')
+  // ─── Step 2: 사이즈 & 수량 ───
+  const [size, setSize] = useState(0)
+  const [quantity, setQuantity] = useState<number | ''>('')
+  // ─── Step 3: 리본 고리 타입 ───
+  const [ribbonType, setRibbonType] = useState('')
+  const [ribbonWidth, setRibbonWidth] = useState('')
+  const [ribbonLength, setRibbonLength] = useState('')
+  // ─── Step 4: 도금 색상 ───
+  const [metalFinish, setMetalFinish] = useState('')
+  // ─── Step 5: 포장 방식 ───
+  const [packing, setPacking] = useState('')
+  // ─── Step 6: 디자인 파일 ───
+  const [artworkFile, setArtworkFile] = useState<File | null>(null)
+  const [notes, setNotes] = useState('')
+  const [purpose, setPurpose] = useState('')
+  // ─── Step 7: 연락처 ───
+  const [contactName, setContactName] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
+  const [contactCompany, setContactCompany] = useState('')
+  const [consent, setConsent] = useState(false)
+  // ─── UI 상태 ───
+  const [submitted, setSubmitted] = useState(false)
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
 
-  // Check auth
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      if (user) {
-        loadUserDesigns(user.id)
-      }
-    })
-  }, [])
+  // ─── 실시간 가격 계산 ─────────────────────────────────────────────
+  const selectedSize = MEDAL_SIZES.find(s => s.value === size)
+  const priceSize = selectedSize?.priceSize || 70
+  const paintType = medalStyle || 'soft_enamel'
+  const qty = typeof quantity === 'number' && quantity > 0 ? quantity : 1
+  const price = calculatePrice(paintType, priceSize, qty)
+  const packingPrice = (PACKING_OPTIONS.find(p => p.id === packing)?.price || 0) * qty
+  const shippingFee = calculateShippingFee(price.total + packingPrice)
+  const totalEstimate = price.total + packingPrice + shippingFee
 
-  // 사용자의 기존 디자인 목록 로드
-  const loadUserDesigns = async (userId: string) => {
-    setDesignsLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('user_designs')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        // 테이블이 없는 경우 빈 배열로 처리
-        console.log('user_designs table not found or error:', error.message)
-        setUserDesigns([])
-        return
-      }
-      setUserDesigns(data || [])
-    } catch (error) {
-      console.error('Failed to load user designs:', error)
-      setUserDesigns([])
-    } finally {
-      setDesignsLoading(false)
-    }
-  }
-
-  // Calculate price for current selection
-  const price = calculatePrice(paintType, size, quantity)
-
-  // Calculate total price for all items (금형비 포함)
-  const totalPrice = orderItems.reduce((sum, item) => {
-    const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
-    const moldFee = item.isNewMold ? MOLD_FEE : 0
-    return sum + itemPrice.total + moldFee
-  }, 0)
-
-  // 금형비 총합
-  const totalMoldFee = orderItems.reduce((sum, item) => {
-    return sum + (item.isNewMold ? MOLD_FEE : 0)
-  }, 0)
-
-  const totalQuantity = orderItems.reduce((sum, item) => sum + item.quantity, 0)
-
-  // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      const fileExt = file.name.split('.').pop()?.toLowerCase()
-      
-      if (fileExt === 'ai') {
-        setDesignFile(file)
-        showToast('파일 업로드 완료!')
-      } else {
-        showToast('AI 파일만 업로드 가능합니다.', 'error')
-      }
-    }
-  }
-
-  // 주문 목록으로 스크롤하는 함수
-  const scrollToOrderList = () => {
-    setTimeout(() => {
-      const orderListElement = document.getElementById('order-item-list')
-      if (orderListElement) {
-        orderListElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        })
-      }
-    }, 100) // 상태 업데이트 후 스크롤
-  }
-
-  // 항목 추가
-  const handleAddItem = () => {
-    // 신규 디자인 모드일 때
-    if (designMode === 'new') {
-      if (!designFile) {
-        showToast('⚠️ 디자인 파일을 먼저 업로드해주세요!', 'error')
-        highlightUpload()
-        return
-      }
-
-      const newItem: OrderItem = {
-        id: generateOrderItemId(),
-        file: designFile,
-        designId: null,
-        designUrl: null,
-        designName: designFile.name,
-        isNewMold: true,
-        paintType,
-        metalColor,
-        size,
-        quantity: quantity || 1,
-      }
-
-      setOrderItems([...orderItems, newItem])
-      setDesignFile(null)
-      setQuantity(1)
-      showToast('✅ 주문 목록에 추가되었습니다!')
-      
-      // 파일 입력 초기화
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-      if (fileInput) fileInput.value = ''
-      
-      // 주문 목록으로 스크롤
-      scrollToOrderList()
-    } 
-    // 기존 디자인 재사용 모드일 때
-    else {
-      if (!selectedDesign) {
-        showToast('⚠️ 재사용할 디자인을 선택해주세요!', 'error')
-        return
-      }
-
-      const newItem: OrderItem = {
-        id: generateOrderItemId(),
-        file: null,
-        designId: selectedDesign.id,
-        designUrl: selectedDesign.design_url,
-        designName: selectedDesign.design_name,
-        isNewMold: false,
-        paintType,
-        metalColor,
-        size,
-        quantity: quantity || 1,
-      }
-
-      setOrderItems([...orderItems, newItem])
-      setSelectedDesign(null)
-      setQuantity(1)
-      showToast('✅ 주문 목록에 추가되었습니다! (금형 재사용)')
-      
-      // 주문 목록으로 스크롤
-      scrollToOrderList()
-    }
-  }
-
-  // 항목 삭제
-  const handleRemoveItem = (id: string) => {
-    setOrderItems(orderItems.filter(item => item.id !== id))
-    showToast('항목이 삭제되었습니다.')
-  }
-
-  // 항목 수량 변경
-  const handleItemQuantityChange = (id: string, newQuantity: number) => {
-    setOrderItems(orderItems.map(item => 
-      item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
-    ))
-  }
-
-  // Show toast
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToast(message)
-    setToastType(type)
-    setTimeout(() => setToast(''), 3000)
-  }
-
-  // 업로드 영역 하이라이트 + 스크롤
-  const highlightUpload = () => {
-    setUploadHighlight(true)
-    setTimeout(() => setUploadHighlight(false), 2000)
-    
-    // 업로드 영역으로 부드럽게 스크롤
-    uploadRef.current?.scrollIntoView({ 
-      behavior: 'smooth', 
-      block: 'center' 
-    })
-  }
-
-  // 디자인 파일 업로드 및 user_designs에 저장
-  const uploadAndSaveDesign = async (file: File, userId: string): Promise<{ designUrl: string; designId: string | null } | null> => {
-    try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
-      
-      const { error: uploadError } = await supabase.storage
-        .from('designs')
-        .upload(fileName, file)
-
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('designs')
-        .getPublicUrl(fileName)
-
-      // user_designs 테이블에 저장 시도 (테이블이 없으면 스킵)
-      let designId: string | null = null
-      try {
-        const { data: designData, error: designError } = await supabase
-          .from('user_designs')
-          .insert({
-            user_id: userId,
-            design_url: publicUrl,
-            design_name: file.name,
-            memo: null,
-            preview_url: null,
-            mold_completed: false,
-          })
-          .select()
-          .single()
-
-        if (!designError && designData) {
-          designId = designData.id
-        }
-      } catch (e) {
-        // user_designs 테이블이 없는 경우 무시
-        console.log('user_designs table not found, skipping...')
-      }
-
-      return { designUrl: publicUrl, designId }
-    } catch (error) {
-      console.error('Design upload error:', error)
-      return null
-    }
-  }
-
-  // 견적서 다운로드
-  const handleDownloadQuote = async () => {
-    if (orderItems.length === 0) {
-      showToast('견적서를 다운로드하려면 항목을 추가해주세요.', 'error')
+    if (!file) return
+    if (file.size > MAX_FILE_SIZE) {
+      alert('파일 크기가 10MB를 초과합니다.')
       return
     }
-
-    showToast('견적서를 생성 중입니다...')
-
-    const quoteItems = orderItems.map((item) => {
-      const itemPrice = calculatePrice(item.paintType, item.size, item.quantity)
-      return {
-        name: '금속 메달',
-        spec: `${getPaintTypeName(item.paintType)} / ${getMetalColorName(item.metalColor)} / ${item.size}mm`,
-        quantity: item.quantity,
-        unitPrice: itemPrice.unitPrice,
-        amount: itemPrice.total,
-        isNewMold: item.isNewMold,
-      }
-    })
-
-    const shippingFee = calculateShippingFee(totalPrice - totalMoldFee)
-
-    try {
-      await generateQuotePDF({
-        items: quoteItems,
-        moldFee: totalMoldFee,
-        moldCount: orderItems.filter(i => i.isNewMold).length,
-        shippingFee,
-        totalAmount: totalPrice + shippingFee,
-      })
-
-      showToast('견적서가 다운로드되었습니다!')
-    } catch (error) {
-      console.error('견적서 생성 오류:', error)
-      showToast('견적서 생성 중 오류가 발생했습니다.', 'error')
-    }
+    setArtworkFile(file)
   }
 
-  // 장바구니에 담기
-  const handleAddToCart = async () => {
-    if (!user) {
-      router.push('/login')
-      return
-    }
-
-    if (orderItems.length === 0) {
-      showToast('장바구니에 담을 항목을 추가해주세요.')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      for (const item of orderItems) {
-        let designUrl = item.designUrl
-        let designId = item.designId
-
-        // 신규 디자인인 경우 업로드 및 저장
-        if (item.isNewMold && item.file) {
-          const result = await uploadAndSaveDesign(item.file, user.id)
-          if (result) {
-            designUrl = result.designUrl
-            designId = result.designId
-          }
-        }
-
-        // Add to cart (design_id, is_new_mold는 DB 스키마 업데이트 후 활성화)
-        const { error } = await supabase.from('cart_items').insert({
-          user_id: user.id,
-          paint_type: item.paintType,
-          metal_color: item.metalColor,
-          size: item.size,
-          quantity: item.quantity,
-          design_url: designUrl,
-          design_name: item.designName,
-          // design_id: designId,        // TODO: DB 스키마 업데이트 후 활성화
-          // is_new_mold: item.isNewMold, // TODO: DB 스키마 업데이트 후 활성화
-        })
-
-        if (error) throw error
-      }
-
-      showToast('장바구니에 담았습니다!')
-      setOrderItems([])
-      // 디자인 목록 새로고침
-      loadUserDesigns(user.id)
-    } catch (error) {
-      console.error('Cart error:', error)
-      showToast('장바구니 추가 중 오류가 발생했습니다.')
-    } finally {
-      setLoading(false)
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!medalStyle) { alert('Step 1: 메달 스타일을 선택해주세요.'); return }
+    if (!size && size !== 0) { alert('Step 2: 사이즈를 선택해주세요.'); return }
+    if (!quantity) { alert('Step 2: 수량을 입력해주세요.'); return }
+    if (!ribbonType) { alert('Step 3: 리본 고리 타입을 선택해주세요.'); return }
+    if (!metalFinish) { alert('Step 4: 도금 색상을 선택해주세요.'); return }
+    if (!packing) { alert('Step 5: 포장 방식을 선택해주세요.'); return }
+    if (!contactName || !contactEmail || !contactPhone) { alert('Step 7: 연락처 정보를 입력해주세요.'); return }
+    setSubmitted(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Handle order - 장바구니에 담고 checkout으로 이동
-  const handleOrder = async () => {
-    if (orderItems.length === 0) {
-      showToast('주문할 항목을 추가해주세요.')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      // 로그인한 경우: 장바구니에 저장
-      if (user) {
-        for (const item of orderItems) {
-          let designUrl = item.designUrl
-          let designId = item.designId
-
-          // 신규 디자인인 경우 업로드 및 저장
-          if (item.isNewMold && item.file) {
-            const result = await uploadAndSaveDesign(item.file, user.id)
-            if (result) {
-              designUrl = result.designUrl
-              designId = result.designId
-            }
-          }
-
-          // Add to cart (design_id, is_new_mold는 DB 스키마 업데이트 후 활성화)
-          const { error } = await supabase.from('cart_items').insert({
-            user_id: user.id,
-            paint_type: item.paintType,
-            metal_color: item.metalColor,
-            size: item.size,
-            quantity: item.quantity,
-            design_url: designUrl,
-            design_name: item.designName,
-            // design_id: designId,        // TODO: DB 스키마 업데이트 후 활성화
-            // is_new_mold: item.isNewMold, // TODO: DB 스키마 업데이트 후 활성화
-          })
-
-          if (error) throw error
-        }
-      } else {
-        // 비로그인 경우: localStorage에 임시 저장
-        const tempItems = orderItems.map(item => ({
-          id: item.id,
-          paint_type: item.paintType,
-          metal_color: item.metalColor,
-          size: item.size,
-          quantity: item.quantity,
-          design_url: item.designUrl,
-          design_name: item.designName,
-        }))
-        localStorage.setItem('tempCheckoutItems', JSON.stringify(tempItems))
-      }
-
-      // checkout 페이지로 이동
-      router.push('/checkout')
-    } catch (error) {
-      console.error('Order error:', error)
-      showToast('주문 중 오류가 발생했습니다.')
-    } finally {
-      setLoading(false)
-    }
+  // ─── 제출 완료 화면 ───────────────────────────────────────────────
+  if (submitted) {
+    return (
+      <>
+        <Header />
+        <main className="pt-20 min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center max-w-lg mx-auto px-4 py-20">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">✓</div>
+            <h2 className="text-2xl font-bold mb-3">견적 요청이 완료되었습니다!</h2>
+            <p className="text-gray-500 mb-1">담당 전문가가 24시간 이내에 상세 견적을 보내드립니다.</p>
+            <p className="text-gray-400 text-sm mb-8">입력하신 이메일({contactEmail})로 연락드리겠습니다.</p>
+            <div className="bg-gray-900 rounded-2xl p-6 text-white mb-8">
+              <p className="text-gray-400 text-sm mb-1">실시간 예상 견적</p>
+              <p className="text-3xl font-bold text-amber-400">₩{totalEstimate.toLocaleString()}</p>
+              <p className="text-gray-500 text-xs mt-2">* 최종 금액은 디자인 확인 후 확정됩니다</p>
+            </div>
+            <button onClick={() => { setSubmitted(false); window.scrollTo({ top: 0 }) }}
+              className="px-8 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors">
+              새 견적 요청하기
+            </button>
+          </div>
+        </main>
+      </>
+    )
   }
+
+  // ─── 스텝 헤더 공통 컴포넌트 ──────────────────────────────────────
+  const StepHeader = ({ step, title, english, required = true }: { step: number; title: string; english: string; required?: boolean }) => (
+    <div className="flex items-center gap-3 mb-6">
+      <div className="w-10 h-10 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">{step}</div>
+      <div>
+        <h2 className="text-lg font-bold">
+          {title} {required && <span className="text-red-500">*</span>}
+        </h2>
+        <p className="text-sm text-gray-400">{english}</p>
+      </div>
+    </div>
+  )
 
   return (
     <>
       <Header />
-      
-      <main className="pt-24 pb-16 px-4 bg-gray-50 min-h-screen">
-        <div className="max-w-7xl mx-auto">
-          {/* Page Header */}
-          <div className="text-center mb-10">
-            <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">
-              나만의 메달 만들기
-            </h1>
-            <p className="text-gray-500 text-lg">디자인 파일 업로드 후 옵션을 선택하세요</p>
+      <main className="pt-20 bg-gray-50 min-h-screen">
+        {/* ─── Hero ─────────────────────────────────────────────── */}
+        <div className="bg-gray-900 text-white py-14 sm:py-20">
+          <div className="max-w-3xl mx-auto px-4 text-center">
+            <p className="text-amber-400 text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase mb-4">
+              Customize Your Medals Now
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-5">나만의 메달을 커스터마이즈하세요</h1>
+            <p className="text-gray-400 leading-relaxed">
+              아래 양식을 작성해주세요. <span className="text-amber-400 font-medium">실시간으로 예상 견적을 확인</span>할 수 있습니다.
+              <br className="hidden sm:block" />
+              담당 전문가가 24시간 이내에 상세 견적을 보내드립니다.
+              <br className="hidden sm:block" />
+              또는{' '}
+              <a href="mailto:hello.medalproject@gmail.com" className="text-amber-400 underline underline-offset-2">
+                hello.medalproject@gmail.com
+              </a>
+              으로 이메일을 보내주세요.
+            </p>
           </div>
+        </div>
 
-          {/* Main Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Options Column */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Design Selection Section */}
-              <DesignSelector
-                user={user}
-                designMode={designMode}
-                setDesignMode={setDesignMode}
-                designFile={designFile}
-                setDesignFile={setDesignFile}
-                selectedDesign={selectedDesign}
-                setSelectedDesign={setSelectedDesign}
-                userDesigns={userDesigns}
-                designsLoading={designsLoading}
-                showToast={showToast}
-                uploadHighlight={uploadHighlight}
-                uploadRef={uploadRef}
-                handleFileChange={handleFileChange}
-              />
+        {/* ─── Form + Sidebar ───────────────────────────────────── */}
+        <div className="max-w-6xl mx-auto px-4 py-10 sm:py-14">
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
 
-              {/* Paint Type */}
-              <PaintTypeSelector value={paintType} onChange={setPaintType} />
+              {/* ─── 좌측: 폼 영역 ──────────────────────────────── */}
+              <div className="lg:col-span-2 space-y-12">
 
-              {/* Metal Color */}
-              <MetalColorSelector value={metalColor} onChange={setMetalColor} />
+                {/* ═══ Step 1: 메달 스타일 ═══════════════════════ */}
+                <section>
+                  <StepHeader step={1} title="메달 스타일 선택" english="Select Medal Style" />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {MEDAL_STYLES.map((style) => (
+                      <button type="button" key={style.id} onClick={() => setMedalStyle(style.id)}
+                        className={`relative rounded-2xl border-2 overflow-hidden transition-all group ${
+                          medalStyle === style.id ? 'border-gray-900 shadow-lg ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                        }`}>
+                        {/* ⚠️ 실제 메달 사진으로 교체 필요 (public/medal-styles/) */}
+                        <div className={`aspect-[4/3] bg-gradient-to-br ${style.gradient} flex items-center justify-center`}>
+                          <span className="text-6xl drop-shadow-lg group-hover:scale-110 transition-transform">{style.emoji}</span>
+                        </div>
+                        <div className="p-4 bg-white">
+                          <p className="font-bold text-sm">{style.name}</p>
+                          <p className="text-xs text-gray-400">{style.english}</p>
+                        </div>
+                        {medalStyle === style.id && (
+                          <div className="absolute top-3 right-3 w-7 h-7 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </section>
 
-              {/* Size */}
-              <SizeSelector value={size} onChange={setSize} />
+                {/* ═══ Step 2: 사이즈 & 수량 ═════════════════════ */}
+                <section>
+                  <StepHeader step={2} title="사이즈, 수량 선택" english="Select Size, Quantity" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">메달 사이즈 <span className="text-red-500">*</span></label>
+                      <select value={size} onChange={(e) => setSize(Number(e.target.value))}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all">
+                        <option value="" disabled>사이즈를 선택하세요...</option>
+                        {MEDAL_SIZES.map((s) => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">수량 <span className="text-red-500">*</span></label>
+                      <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                        placeholder="수량을 입력하세요"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all no-spinner"
+                        min="1" />
+                    </div>
+                  </div>
+                </section>
 
-              {/* Quantity */}
-              <QuantityInput
-                value={quantity}
-                onChange={setQuantity}
-                price={price}
-                paintTypeName={getPaintTypeName(paintType)}
-                metalColorName={getMetalColorName(metalColor)}
-                size={size}
-              />
+                {/* ═══ Step 3: 리본 고리 타입 ═════════════════════ */}
+                <section>
+                  <StepHeader step={3} title="리본 고리 타입 선택" english="Select Ribbon Loop Type" />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    {RIBBON_TYPES.map((ribbon) => (
+                      <button type="button" key={ribbon.id} onClick={() => setRibbonType(ribbon.id)}
+                        className={`relative rounded-2xl border-2 overflow-hidden transition-all ${
+                          ribbonType === ribbon.id ? 'border-gray-900 shadow-lg ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                        }`}>
+                        {/* ⚠️ 실제 리본 사진으로 교체 필요 (public/ribbon/) */}
+                        <div className="aspect-[4/3] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+                          <span className="text-5xl">{ribbon.emoji}</span>
+                        </div>
+                        <div className="p-4 bg-white text-center">
+                          <p className="font-bold text-sm">{ribbon.name}</p>
+                          <p className="text-xs text-gray-400">{ribbon.english}</p>
+                        </div>
+                        {ribbonType === ribbon.id && (
+                          <div className="absolute top-3 right-3 w-7 h-7 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
 
-              {/* 항목 추가 버튼 */}
-              <button
-                onClick={handleAddItem}
-                className="w-full py-4 bg-primary-500 text-white rounded-2xl font-bold text-lg hover:bg-primary-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <span className="text-2xl">+</span>
-                주문 목록에 추가하기
-              </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">리본 너비 <span className="text-red-500">*</span></label>
+                      <select value={ribbonWidth} onChange={(e) => setRibbonWidth(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all">
+                        <option value="" disabled>너비를 선택하세요...</option>
+                        {RIBBON_WIDTHS.map((w) => (
+                          <option key={w.value} value={w.value}>{w.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">리본 길이 <span className="text-red-500">*</span></label>
+                      <select value={ribbonLength} onChange={(e) => setRibbonLength(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all">
+                        <option value="" disabled>길이를 선택하세요...</option>
+                        {RIBBON_LENGTHS.map((l) => (
+                          <option key={l.value} value={l.value}>{l.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </section>
 
-              {/* 추가된 항목 목록 */}
-              <OrderItemList
-                items={orderItems}
-                onQuantityChange={handleItemQuantityChange}
-                onRemove={handleRemoveItem}
-              />
+                {/* ═══ Step 4: 도금 색상 ═════════════════════════ */}
+                <section>
+                  <StepHeader step={4} title="도금 색상 선택" english="Select Metal Finish" />
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {METAL_FINISHES.map((metal) => (
+                      <button type="button" key={metal.id} onClick={() => setMetalFinish(metal.id)}
+                        className={`relative rounded-2xl border-2 overflow-hidden transition-all ${
+                          metalFinish === metal.id ? 'border-gray-900 shadow-lg ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                        }`}>
+                        <div className="aspect-square bg-white flex items-center justify-center p-3">
+                          {metal.image && !imageErrors[metal.id] ? (
+                            <div className="relative w-full h-full">
+                              <Image src={metal.image} alt={metal.name} fill className="object-contain" sizes="150px"
+                                onError={() => setImageErrors(prev => ({ ...prev, [metal.id]: true }))} />
+                            </div>
+                          ) : (
+                            <div className={`w-20 h-20 rounded-full ${metal.cssColor} shadow-inner`} />
+                          )}
+                        </div>
+                        <div className="p-3 bg-white border-t border-gray-100 text-center">
+                          <p className="font-bold text-sm">{metal.name}</p>
+                          <p className="text-xs text-gray-400">{metal.english}</p>
+                        </div>
+                        {metalFinish === metal.id && (
+                          <div className="absolute top-3 right-3 w-7 h-7 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                {/* ═══ Step 5: 포장 방식 ═════════════════════════ */}
+                <section>
+                  <StepHeader step={5} title="포장 방식 선택" english="Choose Packing" />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {PACKING_OPTIONS.map((pack) => (
+                      <button type="button" key={pack.id} onClick={() => setPacking(pack.id)}
+                        className={`relative rounded-2xl border-2 overflow-hidden transition-all ${
+                          packing === pack.id ? 'border-gray-900 shadow-lg ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-400'
+                        }`}>
+                        {/* ⚠️ 실제 포장 사진으로 교체 필요 (public/packing/) */}
+                        <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+                          <span className="text-4xl">{pack.emoji}</span>
+                        </div>
+                        <div className="p-3 bg-white border-t border-gray-100 text-center">
+                          <p className="font-bold text-xs sm:text-sm">{pack.name}</p>
+                          <p className="text-xs text-gray-400">{pack.english}</p>
+                          <span className={`inline-block mt-1.5 text-xs font-bold px-2 py-0.5 rounded-full ${
+                            pack.price === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                          }`}>{pack.tag}</span>
+                        </div>
+                        {packing === pack.id && (
+                          <div className="absolute top-3 right-3 w-7 h-7 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                {/* ═══ Step 6: 디자인 파일 ═══════════════════════ */}
+                <section>
+                  <StepHeader step={6} title="디자인 파일 업로드" english="Artwork Request" required={false} />
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">디자인 파일 업로드</label>
+                      <label className="block border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all">
+                        <input type="file" className="hidden" accept={ACCEPTED_FILES} onChange={handleFileChange} />
+                        <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">📁</div>
+                        {artworkFile ? (
+                          <div>
+                            <p className="font-semibold text-green-600">✓ {artworkFile.name}</p>
+                            <p className="text-xs text-gray-400 mt-1">{(artworkFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setArtworkFile(null) }}
+                              className="mt-2 text-xs text-red-500 hover:underline">파일 삭제</button>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="font-semibold text-gray-700">파일을 업로드하세요</p>
+                            <p className="text-xs text-gray-400 mt-1">지원 형식: JPEG, JPG, PNG, PDF, PSD, AI, EPS, SVG</p>
+                            <p className="text-xs text-gray-400">최대 파일 크기: 10MB</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">참고사항 / 요청사항</label>
+                      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
+                        placeholder="디자인에 대한 참고사항이나 특별 요청사항을 적어주세요"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all resize-none" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">맞춤 메달의 용도는 무엇인가요?</label>
+                      <textarea value={purpose} onChange={(e) => setPurpose(e.target.value)} rows={2}
+                        placeholder="예: 마라톤 대회 시상, 기업 행사, 졸업 기념 등"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all resize-none" />
+                    </div>
+                  </div>
+                </section>
+
+                {/* ═══ Step 7: 연락처 ════════════════════════════ */}
+                <section>
+                  <StepHeader step={7} title="연락처 정보" english="Contact Information" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">이름 <span className="text-red-500">*</span></label>
+                      <input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)}
+                        placeholder="홍길동"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">회사명 / 단체명</label>
+                      <input type="text" value={contactCompany} onChange={(e) => setContactCompany(e.target.value)}
+                        placeholder="(선택사항)"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">이메일 <span className="text-red-500">*</span></label>
+                      <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
+                        placeholder="example@email.com"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">전화번호 <span className="text-red-500">*</span></label>
+                      <input type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)}
+                        placeholder="010-0000-0000"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all" />
+                    </div>
+                  </div>
+
+                  <label className="flex items-start gap-3 mt-5 cursor-pointer">
+                    <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)}
+                      className="mt-1 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
+                    <span className="text-sm text-gray-500 leading-relaxed">
+                      제품 사진을 프로모션 콘텐츠에 사용하는 것에 동의합니다. 다른 고객분들의 현명한 선택에 도움이 됩니다.
+                    </span>
+                  </label>
+                </section>
+
+                {/* ─── 제출 버튼 ─────────────────────────────────── */}
+                <div className="pt-4">
+                  <button type="submit"
+                    className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold text-lg hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl">
+                    무료 견적 요청하기
+                  </button>
+                  <p className="text-center text-xs text-gray-400 mt-3">
+                    제출 후 24시간 이내에 담당자가 연락드립니다
+                  </p>
+                </div>
+              </div>
+
+              {/* ─── 우측: 실시간 견적 사이드바 (PC) ──────────── */}
+              <div className="hidden lg:block">
+                <div className="sticky top-24 space-y-4">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-2 mb-5">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <h3 className="font-bold text-sm text-gray-900">실시간 예상 견적</h3>
+                    </div>
+
+                    <div className="space-y-3 text-sm mb-5">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">메달 스타일</span>
+                        <span className="font-medium">{MEDAL_STYLES.find(s => s.id === medalStyle)?.name || '-'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">사이즈</span>
+                        <span className="font-medium">{selectedSize ? selectedSize.label.split('=')[1]?.trim() || selectedSize.label : '-'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">수량</span>
+                        <span className="font-medium">{qty > 0 ? `${qty}개` : '-'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">도금 색상</span>
+                        <span className="font-medium">{METAL_FINISHES.find(m => m.id === metalFinish)?.name || '-'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">포장</span>
+                        <span className="font-medium">{PACKING_OPTIONS.find(p => p.id === packing)?.name || '-'}</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
+                      <div className="flex justify-between text-gray-500">
+                        <span>제작비 (단가 ₩{price.unitPrice.toLocaleString()} × {qty})</span>
+                        <span>₩{price.total.toLocaleString()}</span>
+                      </div>
+                      {packingPrice > 0 && (
+                        <div className="flex justify-between text-gray-500">
+                          <span>포장비</span>
+                          <span>₩{packingPrice.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {price.discount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>수량 할인</span>
+                          <span>-₩{price.discount.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-gray-500">
+                        <span>배송비</span>
+                        <span>{shippingFee === 0 ? '무료' : `₩${shippingFee.toLocaleString()}`}</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-100 mt-4 pt-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">예상 총액</span>
+                        <span className="text-2xl font-extrabold text-gray-900">₩{totalEstimate.toLocaleString()}</span>
+                      </div>
+                      {price.discount > 0 && (
+                        <p className="text-xs text-amber-600 text-right mt-1">수량 할인 -₩{price.discount.toLocaleString()} 적용</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                    <p className="text-xs text-amber-800 leading-relaxed">
+                      <strong>💡 참고:</strong> 표시된 금액은 예상 견적이며 최종 금액은 디자인 확인 후 확정됩니다.
+                      수량이 많을수록 단가가 낮아집니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
+          </form>
+        </div>
 
-            {/* Preview Column */}
-            <OrderPreview
-              orderItems={orderItems}
-              totalPrice={totalPrice}
-              totalMoldFee={totalMoldFee}
-              totalQuantity={totalQuantity}
-              price={price}
-              quantity={quantity}
-              designFile={designFile}
-              metalColor={metalColor}
-              user={user}
-              loading={loading}
-              handleOrder={handleOrder}
-              handleAddToCart={handleAddToCart}
-              handleDownloadQuote={handleDownloadQuote}
-              onRemoveItem={handleRemoveItem}
-            />
+        {/* ─── 모바일 플로팅 가격 바 ─────────────────────────────── */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center justify-between max-w-lg mx-auto">
+            <div>
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                실시간 예상 견적
+              </p>
+              <p className="text-xl font-extrabold text-gray-900">₩{totalEstimate.toLocaleString()}</p>
+            </div>
+            <button type="button" onClick={() => document.querySelector('form')?.requestSubmit()}
+              className="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-all">
+              견적 요청
+            </button>
           </div>
         </div>
+        <div className="lg:hidden h-20" />
       </main>
-
-      {/* Toast */}
-      {toast && (
-        <div className={`fixed bottom-8 right-8 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 ${
-          toastType === 'error' 
-            ? 'bg-red-600 text-white animate-shake' 
-            : 'bg-gray-900 text-white animate-slide-up'
-        }`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            toastType === 'error' ? 'bg-white text-red-600' : 'bg-green-500 text-white'
-          }`}>
-            {toastType === 'error' ? '!' : '✓'}
-          </div>
-          {toast}
-        </div>
-      )}
-
-      <style jsx>{`
-        @keyframes slide-up {
-          from { transform: translateY(100px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-slide-up { animation: slide-up 0.3s ease-out; }
-      `}</style>
     </>
   )
 }
