@@ -113,16 +113,16 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    const { error: insertError } = await supabase.from('orders').insert(ordersToInsert)
-    if (insertError) {
-      console.error('Order insert error:', insertError)
-      return NextResponse.json({ error: '주문 저장에 실패했습니다.' }, { status: 500 })
-    }
-
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
+
+    const { error: insertError } = await supabaseAdmin.from('orders').insert(ordersToInsert)
+    if (insertError) {
+      console.error('Order insert error:', insertError)
+      return NextResponse.json({ error: '주문 저장에 실패했습니다.' }, { status: 500 })
+    }
 
     const { error: paymentError } = await supabaseAdmin.from('order_payments').insert({
       order_number: orderNumber,
