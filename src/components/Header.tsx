@@ -63,7 +63,7 @@ export default function Header() {
               메달 만들기
             </Link>
             <Link href="/design-request" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">
-              디자인 의뢰
+              디자인 + 제작
             </Link>
             <Link href="/gallery" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">
               제작 사례 보기
@@ -151,10 +151,10 @@ export default function Header() {
             ) : (
               <>
                 <Link
-                  href="/cart"
-                  className="relative px-3 py-2 text-gray-600 hover:text-primary-600 transition-colors"
+                  href="/order"
+                  className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
                 >
-                  <span className="text-xl">🛒</span>
+                  비회원 주문
                 </Link>
                 <Link
                   href="/login"
@@ -200,7 +200,7 @@ export default function Header() {
               className="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
-              🎨 디자인 의뢰
+              🎨 디자인 + 제작
             </Link>
             <Link
               href="/gallery"
@@ -257,19 +257,28 @@ export default function Header() {
             ) : (
               <>
                 <Link
-                  href="/login"
-                  className="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium"
+                  href="/order"
+                  className="block mx-4 py-3 bg-gray-900 text-white rounded-xl font-semibold text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  로그인
+                  비회원 주문하기
                 </Link>
-                <Link
-                  href="/signup"
-                  className="block mx-4 py-3 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-semibold text-center"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  회원가입
-                </Link>
+                <div className="flex gap-2 mx-4 mt-2">
+                  <Link
+                    href="/login"
+                    className="flex-1 py-3 border border-gray-200 text-gray-600 rounded-xl font-medium text-center hover:bg-gray-50"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    로그인
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-xl font-semibold text-center"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    회원가입
+                  </Link>
+                </div>
               </>
             )}
           </div>

@@ -60,7 +60,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg sm:text-xl text-gray-500 mb-12 max-w-2xl mx-auto leading-relaxed">
-            AI 파일을 업로드하면 실시간으로 견적을 확인할 수 있습니다.<br className="hidden sm:block" />
+            실시간으로 가격을 확인하고 바로 주문하세요.<br className="hidden sm:block" />
             1개부터 주문 가능하며, 20일 이내에 발송됩니다.
           </p>
 
@@ -69,15 +69,15 @@ export default function Home() {
               href="/order"
               className="group px-10 py-5 bg-gray-900 text-white rounded-2xl font-bold text-lg hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/20 hover:-translate-y-0.5 text-center"
             >
-              <span className="block">디자인이 있어요</span>
-              <span className="block text-sm font-medium text-gray-400 group-hover:text-gray-300 mt-1">바로 견적받기 →</span>
+              <span className="block">디자인 파일이 있어요</span>
+              <span className="block text-sm font-medium text-gray-400 group-hover:text-gray-300 mt-1">바로 제작하기 →</span>
             </Link>
             <Link
               href="/design-request"
               className="group px-10 py-5 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl font-bold text-lg hover:border-amber-400 hover:text-gray-900 transition-all text-center"
             >
-              <span className="block">디자인이 없어요</span>
-              <span className="block text-sm font-medium text-amber-600 mt-1">무료 디자인 의뢰 →</span>
+              <span className="block">디자인 파일이 없어요</span>
+              <span className="block text-sm font-medium text-amber-600 mt-1">견적 의뢰하기 →</span>
             </Link>
           </div>
 
@@ -368,13 +368,13 @@ export default function Home() {
               href="/order"
               className="inline-block px-10 py-4 bg-white text-gray-900 rounded-full font-bold text-lg hover:bg-gray-100 transition-all shadow-lg hover:-translate-y-0.5"
             >
-              바로 견적받기 →
+              바로 제작하기 →
             </Link>
             <Link
               href="/design-request"
               className="inline-block px-10 py-4 bg-transparent border-2 border-gray-600 text-white rounded-full font-bold text-lg hover:border-amber-500 hover:text-amber-400 transition-all"
             >
-              무료 디자인 의뢰 →
+              견적 의뢰하기 →
             </Link>
           </div>
         </div>
@@ -395,7 +395,7 @@ export default function Home() {
             href="/order"
             className="flex items-center justify-center gap-2 w-full py-4 bg-gray-900 text-white rounded-xl font-bold text-lg active:scale-[0.98] transition-transform"
           >
-            바로 견적받기 →
+            바로 제작하기 →
           </Link>
         </div>
       </div>

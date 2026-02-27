@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import Image from 'next/image'
 import { calculatePrice, calculateShippingFee } from '@/lib/supabase'
@@ -83,6 +84,7 @@ const ACCEPTED_FILES = '.jpeg,.jpg,.png,.pdf,.psd,.ai,.eps,.svg'
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function OrderPage() {
+  const router = useRouter()
   // ─── Step 1: 메달 스타일 ───
   const [medalStyle, setMedalStyle] = useState('')
   // ─── Step 2: 사이즈 & 수량 ───
@@ -100,14 +102,7 @@ export default function OrderPage() {
   const [artworkFile, setArtworkFile] = useState<File | null>(null)
   const [notes, setNotes] = useState('')
   const [purpose, setPurpose] = useState('')
-  // ─── Step 7: 연락처 ───
-  const [contactName, setContactName] = useState('')
-  const [contactEmail, setContactEmail] = useState('')
-  const [contactPhone, setContactPhone] = useState('')
-  const [contactCompany, setContactCompany] = useState('')
-  const [consent, setConsent] = useState(false)
   // ─── UI 상태 ───
-  const [submitted, setSubmitted] = useState(false)
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
 
   // ─── 실시간 가격 계산 ─────────────────────────────────────────────
@@ -130,43 +125,24 @@ export default function OrderPage() {
     setArtworkFile(file)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  // 비회원 바로 주문하기 - localStorage에 저장 후 checkout으로 이동
+  const handleDirectOrder = () => {
     if (!medalStyle) { alert('Step 1: 메달 스타일을 선택해주세요.'); return }
-    if (!size && size !== 0) { alert('Step 2: 사이즈를 선택해주세요.'); return }
     if (!quantity) { alert('Step 2: 수량을 입력해주세요.'); return }
-    if (!ribbonType) { alert('Step 3: 리본 고리 타입을 선택해주세요.'); return }
     if (!metalFinish) { alert('Step 4: 도금 색상을 선택해주세요.'); return }
-    if (!packing) { alert('Step 5: 포장 방식을 선택해주세요.'); return }
-    if (!contactName || !contactEmail || !contactPhone) { alert('Step 7: 연락처 정보를 입력해주세요.'); return }
-    setSubmitted(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
 
-  // ─── 제출 완료 화면 ───────────────────────────────────────────────
-  if (submitted) {
-    return (
-      <>
-        <Header />
-        <main className="pt-20 min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center max-w-lg mx-auto px-4 py-20">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">✓</div>
-            <h2 className="text-2xl font-bold mb-3">견적 요청이 완료되었습니다!</h2>
-            <p className="text-gray-500 mb-1">담당 전문가가 24시간 이내에 상세 견적을 보내드립니다.</p>
-            <p className="text-gray-400 text-sm mb-8">입력하신 이메일({contactEmail})로 연락드리겠습니다.</p>
-            <div className="bg-gray-900 rounded-2xl p-6 text-white mb-8">
-              <p className="text-gray-400 text-sm mb-1">실시간 예상 견적</p>
-              <p className="text-3xl font-bold text-amber-400">₩{totalEstimate.toLocaleString()}</p>
-              <p className="text-gray-500 text-xs mt-2">* 최종 금액은 디자인 확인 후 확정됩니다</p>
-            </div>
-            <button onClick={() => { setSubmitted(false); window.scrollTo({ top: 0 }) }}
-              className="px-8 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors">
-              새 견적 요청하기
-            </button>
-          </div>
-        </main>
-      </>
-    )
+    const checkoutItem = {
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      paint_type: medalStyle,
+      metal_color: metalFinish,
+      size: priceSize,
+      quantity: qty,
+      design_url: null,
+      design_name: artworkFile?.name || null,
+    }
+
+    localStorage.setItem('tempCheckoutItems', JSON.stringify([checkoutItem]))
+    router.push('/checkout')
   }
 
   // ─── 스텝 헤더 공통 컴포넌트 ──────────────────────────────────────
@@ -190,26 +166,30 @@ export default function OrderPage() {
         <div className="bg-gray-900 text-white py-14 sm:py-20">
           <div className="max-w-3xl mx-auto px-4 text-center">
             <p className="text-amber-400 text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase mb-4">
-              Customize Your Medals Now
+              Medal Manufacturing
             </p>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-5">나만의 메달을 커스터마이즈하세요</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-5">메달 제작하기</h1>
             <p className="text-gray-400 leading-relaxed">
-              아래 양식을 작성해주세요. <span className="text-amber-400 font-medium">실시간으로 예상 견적을 확인</span>할 수 있습니다.
+              원하는 옵션을 선택하고 <span className="text-amber-400 font-medium">바로 주문</span>하세요.
               <br className="hidden sm:block" />
-              담당 전문가가 24시간 이내에 상세 견적을 보내드립니다.
-              <br className="hidden sm:block" />
-              또는{' '}
-              <a href="mailto:hello.medalproject@gmail.com" className="text-amber-400 underline underline-offset-2">
-                hello.medalproject@gmail.com
-              </a>
-              으로 이메일을 보내주세요.
+              실시간으로 예상 가격을 확인할 수 있습니다. 회원가입 없이 주문 가능합니다.
             </p>
+          </div>
+        </div>
+
+        {/* ─── 비회원 주문 안내 배너 ─────────────────────────────── */}
+        <div className="max-w-6xl mx-auto px-4 pt-8 sm:pt-10">
+          <div className="bg-white border border-amber-200 rounded-2xl p-4 sm:p-5 flex items-center gap-4">
+            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-xl flex-shrink-0">👤</div>
+            <div className="flex-1">
+              <p className="font-bold text-gray-900 text-sm">회원가입 없이 바로 주문할 수 있습니다</p>
+              <p className="text-xs text-gray-500 mt-0.5">옵션 선택 → 주문하기 → 배송지 입력 → 결제 순서로 진행됩니다</p>
+            </div>
           </div>
         </div>
 
         {/* ─── Form + Sidebar ───────────────────────────────────── */}
         <div className="max-w-6xl mx-auto px-4 py-10 sm:py-14">
-          <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
 
               {/* ─── 좌측: 폼 영역 ──────────────────────────────── */}
@@ -414,53 +394,14 @@ export default function OrderPage() {
                   </div>
                 </section>
 
-                {/* ═══ Step 7: 연락처 ════════════════════════════ */}
-                <section>
-                  <StepHeader step={7} title="연락처 정보" english="Contact Information" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">이름 <span className="text-red-500">*</span></label>
-                      <input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)}
-                        placeholder="홍길동"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">회사명 / 단체명</label>
-                      <input type="text" value={contactCompany} onChange={(e) => setContactCompany(e.target.value)}
-                        placeholder="(선택사항)"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">이메일 <span className="text-red-500">*</span></label>
-                      <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
-                        placeholder="example@email.com"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">전화번호 <span className="text-red-500">*</span></label>
-                      <input type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)}
-                        placeholder="010-0000-0000"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all" />
-                    </div>
-                  </div>
-
-                  <label className="flex items-start gap-3 mt-5 cursor-pointer">
-                    <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)}
-                      className="mt-1 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-                    <span className="text-sm text-gray-500 leading-relaxed">
-                      제품 사진을 프로모션 콘텐츠에 사용하는 것에 동의합니다. 다른 고객분들의 현명한 선택에 도움이 됩니다.
-                    </span>
-                  </label>
-                </section>
-
-                {/* ─── 제출 버튼 ─────────────────────────────────── */}
+                {/* ─── 주문 버튼 ─────────────────────────────────── */}
                 <div className="pt-4">
-                  <button type="submit"
+                  <button type="button" onClick={handleDirectOrder}
                     className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold text-lg hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl">
-                    무료 견적 요청하기
+                    주문하기 →
                   </button>
                   <p className="text-center text-xs text-gray-400 mt-3">
-                    제출 후 24시간 이내에 담당자가 연락드립니다
+                    회원가입 없이 바로 주문 가능 · 배송지 입력 후 결제가 진행됩니다
                   </p>
                 </div>
               </div>
@@ -471,7 +412,7 @@ export default function OrderPage() {
                   <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <div className="flex items-center gap-2 mb-5">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <h3 className="font-bold text-sm text-gray-900">실시간 예상 견적</h3>
+                      <h3 className="font-bold text-sm text-gray-900">주문 요약</h3>
                     </div>
 
                     <div className="space-y-3 text-sm mb-5">
@@ -531,16 +472,17 @@ export default function OrderPage() {
                     </div>
                   </div>
 
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                    <p className="text-xs text-amber-800 leading-relaxed">
-                      <strong>💡 참고:</strong> 표시된 금액은 예상 견적이며 최종 금액은 디자인 확인 후 확정됩니다.
-                      수량이 많을수록 단가가 낮아집니다.
-                    </p>
-                  </div>
+                  <button type="button" onClick={handleDirectOrder}
+                    className="w-full py-3.5 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-lg">
+                    주문하기 →
+                  </button>
+
+                  <p className="text-xs text-gray-400 text-center">
+                    배송지 입력 후 결제가 진행됩니다
+                  </p>
                 </div>
               </div>
             </div>
-          </form>
         </div>
 
         {/* ─── 모바일 플로팅 가격 바 ─────────────────────────────── */}
@@ -549,13 +491,13 @@ export default function OrderPage() {
             <div>
               <p className="text-xs text-gray-500 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                실시간 예상 견적
+                예상 총액
               </p>
               <p className="text-xl font-extrabold text-gray-900">₩{totalEstimate.toLocaleString()}</p>
             </div>
-            <button type="button" onClick={() => document.querySelector('form')?.requestSubmit()}
+            <button type="button" onClick={handleDirectOrder}
               className="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-all">
-              견적 요청
+              주문하기
             </button>
           </div>
         </div>

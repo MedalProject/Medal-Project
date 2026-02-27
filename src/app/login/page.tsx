@@ -194,6 +194,19 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
+
+          {/* 비회원 주문 안내 */}
+          <div className="mt-6 border-t border-gray-100 pt-6">
+            <Link
+              href="/order"
+              className="block w-full py-4 bg-gray-900 text-white rounded-xl font-bold text-center hover:bg-gray-800 transition-all"
+            >
+              회원가입 없이 주문하기 →
+            </Link>
+            <p className="text-center text-xs text-gray-400 mt-2">
+              로그인 없이 바로 주문·결제가 가능합니다
+            </p>
+          </div>
         </div>
 
         {/* Back to home */}

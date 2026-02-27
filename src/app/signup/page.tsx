@@ -41,6 +41,12 @@ export default function SignupPage() {
         body: JSON.stringify({ email: emailToCheck })
       })
 
+      if (!res.ok) {
+        // 서버 에러(500 등)는 이메일 형식 문제가 아니므로 통과 처리
+        setEmailStatus('available')
+        return
+      }
+
       const data = await res.json()
 
       if (data.exists) {
@@ -51,8 +57,8 @@ export default function SignupPage() {
         setEmailStatus('invalid')
       }
     } catch (err) {
-      // API 에러 시 무시 (가입 시 다시 확인됨)
-      setEmailStatus('idle')
+      // API 에러 시 통과 처리 (가입 시 다시 확인됨)
+      setEmailStatus('available')
     }
   }
 
