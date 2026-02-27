@@ -416,9 +416,9 @@ export default function CheckoutPage() {
         }),
       })
 
-      const data = (await response.json()) as KcpRegisterResponse
+      const data = (await response.json()) as KcpRegisterResponse & { error?: string }
       if (!response.ok) {
-        // showToast(data?.error || '결제 요청에 실패했습니다.', 'error')
+        showToast(data?.error || '결제 요청에 실패했습니다.', 'error')
         return
       }
 
